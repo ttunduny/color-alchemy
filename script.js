@@ -10,13 +10,12 @@ class ColorAlchemyGame {
         this.maxTries = 8;
         this.frustrationLevels = [5, 8, 12, 15, 18];
         this.colorLibrary = {};
-
-        // FIXED: Initialize color library FIRST
-        this.initializeColorLibrary();
-
-        // THEN get daily challenge (which uses colorLibrary)
+        this.currentMode = 'daily'; // daily, levels, picker
         this.dailyChallenge = this.getDailyChallenge();
         this.playerStats = this.getPlayerStats();
+
+        // Initialize color library FIRST
+        this.initializeColorLibrary();
 
         this.initializeGame();
         this.setupEventListeners();
@@ -47,16 +46,13 @@ class ColorAlchemyGame {
     }
 
     generateDailyColor() {
-        // Now colorLibrary is properly initialized
         const allColors = [];
         for (let tier = 1; tier <= 5; tier++) {
-            // Add safety check
             if (this.colorLibrary[tier] && Array.isArray(this.colorLibrary[tier])) {
                 allColors.push(...this.colorLibrary[tier]);
             }
         }
 
-        // Fallback if no colors found
         if (allColors.length === 0) {
             console.warn("No colors found in library, using fallback");
             return {
@@ -109,15 +105,11 @@ class ColorAlchemyGame {
     }
 
     updateSocialStats() {
-        // Update daily challenge info
         document.getElementById('dailyColorName').textContent = this.dailyChallenge.colorName;
         document.getElementById('dailyPlayers').textContent = this.dailyChallenge.players.toLocaleString();
-
-        // Update global stats with random but believable numbers
         document.getElementById('globalPlayers').textContent = (this.dailyChallenge.players + Math.floor(Math.random() * 2000)).toLocaleString();
         document.getElementById('todayShares').textContent = this.dailyChallenge.shares.toLocaleString();
 
-        // Update rank (simulated)
         const rank = Math.floor(Math.random() * 500) + 1;
         document.getElementById('globalRank').textContent = `#${rank}`;
         document.getElementById('rank').textContent = `#${rank}`;
@@ -182,25 +174,116 @@ class ColorAlchemyGame {
     }
 
     generateTargetColor() {
-        const tier = this.getDifficultyTier();
-        const colors = this.colorLibrary[tier];
-        const index = (this.level - 1) % colors.length;
+        switch (this.currentMode) {
+            case 'daily':
+                this.targetColor = this.dailyChallenge.color;
+                this.colorName = this.dailyChallenge.colorName;
+                document.getElementById('targetTitle').textContent = '🎯 Daily Challenge';
+                document.getElementById('feedbackHeader').textContent = 'Daily Challenge';
+                break;
 
-        const target = colors[index];
-        this.targetColor = target.color;
-        this.colorName = target.name;
+            case 'levels':
+                const tier = this.getDifficultyTier();
+                const colors = this.colorLibrary[tier];
+                const index = (this.level - 1) % colors.length;
+                const target = colors[index];
+                this.targetColor = target.color;
+                this.colorName = target.name;
+                document.getElementById('targetTitle').textContent = `🎯 Level ${this.level}`;
+                document.getElementById('feedbackHeader').textContent = `Level ${this.level}`;
+                break;
 
-        // Update color hint based on level difficulty
+            case 'picker':
+                // For picker mode, target is set by user interaction
+                document.getElementById('targetTitle').textContent = '🎯 Custom Color';
+                document.getElementById('feedbackHeader').textContent = 'Color Picker';
+                break;
+        }
+
+        // Update color hint based on mode and level difficulty
         const colorHint = document.getElementById('colorHint');
-        if (this.frustrationLevels.includes(this.level)) {
+        if (this.currentMode === 'levels' && this.frustrationLevels.includes(this.level)) {
             colorHint.textContent = "🤔 Tricky color - good luck!";
             colorHint.style.color = "#dc3545";
             colorHint.style.fontWeight = "bold";
+        } else if (this.currentMode === 'picker') {
+            colorHint.textContent = "Pick a color above or use random options";
+            colorHint.style.color = "#6c757d";
+            colorHint.style.fontWeight = "normal";
         } else {
-            colorHint.textContent = target.hint;
+            colorHint.textContent = "Mix colors to match the target";
             colorHint.style.color = "#6c757d";
             colorHint.style.fontWeight = "normal";
         }
+    }
+
+    setCustomColor(hexColor) {
+        // Convert hex to RGB
+        const r = parseInt(hexColor.substr(1, 2), 16);
+        const g = parseInt(hexColor.substr(3, 2), 16);
+        const b = parseInt(hexColor.substr(5, 2), 16);
+
+        this.targetColor = { r, g, b };
+        this.colorName = this.generateColorName(this.targetColor);
+        this.updateDisplay();
+
+        document.getElementById('feedback').innerHTML = `🎨 Target set: <strong>${this.colorName}</strong>`;
+        document.getElementById('feedback').className = 'feedback info';
+    }
+
+    generateColorName(color) {
+        // Simple color naming based on RGB values
+        const { r, g, b } = color;
+
+        if (r > 200 && g > 200 && b > 200) return "Bright White";
+        if (r < 50 && g < 50 && b < 50) return "Deep Black";
+        if (r > g && r > b) {
+            if (g > 150) return "Warm Red";
+            return "Vibrant Red";
+        }
+        if (g > r && g > b) {
+            if (r > 150) return "Lime Green";
+            return "Forest Green";
+        }
+        if (b > r && b > g) {
+            if (r > 150) return "Royal Blue";
+            return "Ocean Blue";
+        }
+        if (Math.abs(r - g) < 30 && Math.abs(g - b) < 30) {
+            return "Neutral Gray";
+        }
+
+        return "Mystery Color";
+    }
+
+    generateRandomColor() {
+        const r = Math.floor(Math.random() * 256);
+        const g = Math.floor(Math.random() * 256);
+        const b = Math.floor(Math.random() * 256);
+
+        this.targetColor = { r, g, b };
+        this.colorName = this.generateColorName(this.targetColor);
+        this.updateDisplay();
+
+        document.getElementById('feedback').innerHTML = `🎲 Random color: <strong>${this.colorName}</strong>`;
+        document.getElementById('feedback').className = 'feedback info';
+    }
+
+    generateChallengeColor() {
+        // Generate a tricky color (close to gray or with subtle differences)
+        const base = Math.floor(Math.random() * 100) + 78;
+        const variation = Math.floor(Math.random() * 40) - 20;
+
+        const r = Math.max(0, Math.min(255, base + variation));
+        const g = Math.max(0, Math.min(255, base + Math.floor(Math.random() * 40) - 20));
+        const b = Math.max(0, Math.min(255, base + Math.floor(Math.random() * 40) - 20));
+
+        this.targetColor = { r, g, b };
+        this.colorName = "Challenge Color";
+        this.updateDisplay();
+
+        document.getElementById('feedback').innerHTML = `🤔 Challenge accepted! This one's tricky!`;
+        document.getElementById('feedback').className = 'feedback info';
     }
 
     setupEventListeners() {
@@ -211,7 +294,33 @@ class ColorAlchemyGame {
         const resetBtn = document.getElementById('resetBtn');
         const hintBtn = document.getElementById('hintBtn');
         const nextLevelBtn = document.getElementById('nextLevelBtn');
-        const dailyCloseBtn = document.getElementById('dailyCloseBtn');
+
+        // Mode selector buttons
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        modeButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const mode = e.target.dataset.mode;
+                this.switchMode(mode);
+            });
+        });
+
+        // Color picker elements
+        const customColorPicker = document.getElementById('customColorPicker');
+        const setCustomColor = document.getElementById('setCustomColor');
+        const randomColor = document.getElementById('randomColor');
+        const challengeColor = document.getElementById('challengeColor');
+
+        setCustomColor.addEventListener('click', () => {
+            this.setCustomColor(customColorPicker.value);
+        });
+
+        randomColor.addEventListener('click', () => {
+            this.generateRandomColor();
+        });
+
+        challengeColor.addEventListener('click', () => {
+            this.generateChallengeColor();
+        });
 
         // Social sharing buttons
         const shareTwitter = document.getElementById('shareTwitter');
@@ -219,8 +328,6 @@ class ColorAlchemyGame {
         const shareCopy = document.getElementById('shareCopy');
         const modalShareTwitter = document.getElementById('modalShareTwitter');
         const modalShareFacebook = document.getElementById('modalShareFacebook');
-        const dailyShareTwitter = document.getElementById('dailyShareTwitter');
-        const dailyChallengeFriends = document.getElementById('dailyChallengeFriends');
 
         // Drag and drop events
         colorDroppers.forEach(dropper => {
@@ -245,7 +352,6 @@ class ColorAlchemyGame {
         resetBtn.addEventListener('click', this.resetMix.bind(this));
         hintBtn.addEventListener('click', this.giveHint.bind(this));
         nextLevelBtn.addEventListener('click', this.hideModal.bind(this));
-        dailyCloseBtn.addEventListener('click', this.hideDailyModal.bind(this));
 
         // Social sharing events
         shareTwitter.addEventListener('click', () => this.shareOnTwitter());
@@ -253,8 +359,6 @@ class ColorAlchemyGame {
         shareCopy.addEventListener('click', () => this.copyShareLink());
         modalShareTwitter.addEventListener('click', () => this.shareScoreOnTwitter());
         modalShareFacebook.addEventListener('click', () => this.shareScoreOnFacebook());
-        dailyShareTwitter.addEventListener('click', () => this.shareDailyOnTwitter());
-        dailyChallengeFriends.addEventListener('click', () => this.challengeFriends());
 
         // Touch events for mobile
         colorDroppers.forEach(dropper => {
@@ -280,7 +384,53 @@ class ColorAlchemyGame {
         });
     }
 
-    // Social Sharing Methods
+    switchMode(mode) {
+        // Update active mode button
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+
+        // Show/hide daily challenge banner
+        const dailyBanner = document.getElementById('dailyChallenge');
+        dailyBanner.style.display = mode === 'daily' ? 'block' : 'none';
+
+        // Show/hide color picker section
+        const colorPickerSection = document.getElementById('colorPickerSection');
+        colorPickerSection.style.display = mode === 'picker' ? 'block' : 'none';
+
+        // Reset game state for new mode
+        this.currentMode = mode;
+        this.tries = 0;
+        this.resetMix();
+
+        if (mode === 'picker') {
+            // Set initial random color for picker mode
+            this.generateRandomColor();
+        } else {
+            this.generateTargetColor();
+        }
+
+        this.updateDisplay();
+
+        // Update feedback message
+        let message = '';
+        switch (mode) {
+            case 'daily':
+                message = '🔥 Daily Challenge - Match the color before time runs out!';
+                break;
+            case 'levels':
+                message = `🎮 Level ${this.level} - Progress through 20 challenging levels!`;
+                break;
+            case 'picker':
+                message = '🎨 Color Picker - Create any color you can imagine!';
+                break;
+        }
+
+        document.getElementById('feedback').innerHTML = message;
+        document.getElementById('feedback').className = 'feedback info';
+    }
+
     shareOnTwitter() {
         const text = `🎨 I'm mastering color magic in Color Alchemy! Can you beat my skills? 🔮\n\nJoin the daily challenge and test your color mixing abilities!`;
         const url = window.location.href;
@@ -310,34 +460,6 @@ class ColorAlchemyGame {
         const url = window.location.href;
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(quote)}`, '_blank');
         this.trackShare('facebook_score');
-    }
-
-    shareDailyOnTwitter() {
-        const tries = this.dailyChallenge.tries;
-        const score = this.dailyChallenge.score;
-        const text = `🔥 I completed today's Color Alchemy challenge in ${tries} tries with a score of ${score}! 🏆\n\nCan you beat my time? Daily challenge resets in 24 hours!`;
-        const url = window.location.href;
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-        this.trackShare('twitter_daily');
-    }
-
-    challengeFriends() {
-        const text = `🎯 I challenge you to beat me in Color Alchemy! 🔮\n\nToday's daily challenge ends in 24 hours - let's see who's the true color master!`;
-        const url = window.location.href;
-
-        if (navigator.share) {
-            navigator.share({
-                title: 'Color Alchemy Challenge',
-                text: text,
-                url: url
-            }).then(() => this.trackShare('native_challenge'));
-        } else {
-            // Fallback to copying to clipboard
-            navigator.clipboard.writeText(`${text}\n\n${url}`).then(() => {
-                alert('Challenge message copied to clipboard! Send it to your friends.');
-                this.trackShare('clipboard_challenge');
-            });
-        }
     }
 
     copyShareLink() {
@@ -407,8 +529,8 @@ class ColorAlchemyGame {
 
         this.mixedColors.push(color);
 
-        // Enhanced mixing algorithm with progressive complexity
-        let mix = { r: 0, g: 0, b: 0 };
+        // NEW: Start from white and subtract colors (like real paint mixing)
+        let mix = { r: 255, g: 255, b: 255 };
 
         // Count colors
         const colorCount = {
@@ -417,42 +539,36 @@ class ColorAlchemyGame {
             blue: this.mixedColors.filter(c => c === 'blue').length
         };
 
-        // Base values - these create the core colors
-        mix.r = Math.min(255, colorCount.red * 85);      // 3 reds = 255
-        mix.g = Math.min(255, colorCount.green * 85);    // 3 greens = 255
-        mix.b = Math.min(255, colorCount.blue * 85);     // 3 blues = 255
+        // REAL COLOR MIXING LOGIC:
+        // Each color addition reduces the other two components
+        // This mimics real paint/subtractive color mixing
 
-        // Add color interaction effects (more complex in higher levels)
-        if (this.level >= 8) {
-            // Red-Green interaction creates yellows/oranges
-            if (colorCount.red > 0 && colorCount.green > 0) {
-                const interaction = Math.min(colorCount.red, colorCount.green) * 10;
-                mix.r = Math.min(255, mix.r + interaction);
-                mix.g = Math.min(255, mix.g + interaction);
-            }
+        // Red reduces green and blue, increases red
+        const redEffect = Math.min(80, colorCount.red * 25);
+        mix.r = Math.min(255, 255 - Math.max(0, 80 - redEffect));
+        mix.g = Math.max(0, 255 - redEffect * 1.2);
+        mix.b = Math.max(0, 255 - redEffect * 1.2);
 
-            // Red-Blue interaction creates purples
-            if (colorCount.red > 0 && colorCount.blue > 0) {
-                const interaction = Math.min(colorCount.red, colorCount.blue) * 8;
-                mix.r = Math.min(255, mix.r + interaction);
-                mix.b = Math.min(255, mix.b + interaction);
-            }
+        // Green reduces red and blue, increases green
+        const greenEffect = Math.min(80, colorCount.green * 25);
+        mix.r = Math.max(0, mix.r - greenEffect * 0.8);
+        mix.g = Math.min(255, mix.g + Math.min(60, greenEffect));
+        mix.b = Math.max(0, mix.b - greenEffect * 0.8);
 
-            // Green-Blue interaction creates cyans
-            if (colorCount.green > 0 && colorCount.blue > 0) {
-                const interaction = Math.min(colorCount.green, colorCount.blue) * 8;
-                mix.g = Math.min(255, mix.g + interaction);
-                mix.b = Math.min(255, mix.b + interaction);
-            }
-        }
+        // Blue reduces red and green, increases blue
+        const blueEffect = Math.min(80, colorCount.blue * 25);
+        mix.r = Math.max(0, mix.r - blueEffect * 0.8);
+        mix.g = Math.max(0, mix.g - blueEffect * 0.8);
+        mix.b = Math.min(255, mix.b + Math.min(60, blueEffect));
 
-        // Add frustration elements for specific levels
-        if (this.frustrationLevels.includes(this.level)) {
-            // Make colors less predictable
-            const noise = (Math.random() - 0.5) * 15;
-            mix.r = Math.max(0, Math.min(255, mix.r + noise));
-            mix.g = Math.max(0, Math.min(255, mix.g + noise));
-            mix.b = Math.max(0, Math.min(255, mix.b + noise));
+        // Apply saturation limits
+        mix.r = Math.max(0, Math.min(255, Math.round(mix.r)));
+        mix.g = Math.max(0, Math.min(255, Math.round(mix.g)));
+        mix.b = Math.max(0, Math.min(255, Math.round(mix.b)));
+
+        // Limit total mixes
+        if (this.mixedColors.length > 6) {
+            this.mixedColors.shift();
         }
 
         this.currentMix = mix;
@@ -554,15 +670,27 @@ class ColorAlchemyGame {
         this.tries++;
         document.getElementById('tries').textContent = this.tries;
 
-        const tier = this.getDifficultyTier();
-        const colors = this.colorLibrary[tier];
-        const index = (this.level - 1) % colors.length;
-        const target = colors[index];
-
         let hintMessage = "💡 Hint: ";
 
-        if (this.frustrationLevels.includes(this.level)) {
-            // More specific hints for frustration levels
+        if (this.currentMode === 'picker') {
+            const r = this.targetColor.r;
+            const g = this.targetColor.g;
+            const b = this.targetColor.b;
+
+            hintMessage += `Target: R${r} G${g} B${b}. `;
+
+            if (Math.abs(r - g) < 20 && Math.abs(g - b) < 20) {
+                hintMessage += "This is a balanced color - need equal parts!";
+            } else if (r > g && r > b) {
+                hintMessage += "Red is dominant here";
+            } else if (g > r && g > b) {
+                hintMessage += "Green is dominant here";
+            } else if (b > r && b > g) {
+                hintMessage += "Blue is dominant here";
+            } else {
+                hintMessage += "Two colors are competing for dominance";
+            }
+        } else if (this.currentMode === 'levels' && this.frustrationLevels.includes(this.level)) {
             const r = this.targetColor.r;
             const g = this.targetColor.g;
             const b = this.targetColor.b;
@@ -581,7 +709,7 @@ class ColorAlchemyGame {
                 hintMessage += "Two colors are competing for dominance";
             }
         } else {
-            hintMessage += target.hint;
+            hintMessage += "Try different color combinations and ratios";
         }
 
         document.getElementById('feedback').innerHTML = hintMessage;
@@ -597,12 +725,15 @@ class ColorAlchemyGame {
 
     showGameOver(success) {
         const modal = document.getElementById('gameOverModal');
-        const finalLevel = document.getElementById('finalLevel');
         const finalTries = document.getElementById('finalTries');
         const finalScore = document.getElementById('finalScore');
         const finalRank = document.getElementById('finalRank');
+        const scoreLabel1 = document.getElementById('scoreLabel1');
+        const scoreValue1 = document.getElementById('scoreValue1');
+        const scoreLabelTotal = document.getElementById('scoreLabelTotal');
+        const modalTitle = document.getElementById('modalTitle');
+        const shareMessage = document.getElementById('shareMessage');
 
-        finalLevel.textContent = this.level;
         finalTries.textContent = this.tries;
 
         if (success) {
@@ -610,18 +741,43 @@ class ColorAlchemyGame {
             const efficiency = Math.max(0, this.maxTries - this.tries);
             const efficiencyPoints = efficiency * 8;
             const levelBonus = this.level * 10;
-            const frustrationBonus = this.frustrationLevels.includes(this.level) ? 50 : 0;
+            const frustrationBonus = (this.currentMode === 'levels' && this.frustrationLevels.includes(this.level)) ? 50 : 0;
             const totalScore = baseScore + efficiencyPoints + levelBonus + frustrationBonus;
 
             finalScore.textContent = totalScore;
 
-            // Update rank
-            const rank = Math.floor(Math.random() * 100) + 1;
-            finalRank.textContent = `#${rank}`;
-            document.getElementById('rank').textContent = `#${rank}`;
+            // Update modal content based on mode
+            switch (this.currentMode) {
+                case 'daily':
+                    modalTitle.textContent = '🎉 Daily Challenge Complete!';
+                    scoreLabel1.textContent = 'Color:';
+                    scoreValue1.textContent = this.colorName;
+                    scoreLabelTotal.textContent = 'Daily Score:';
+                    shareMessage.textContent = '🎊 Share your daily achievement with friends!';
+                    finalRank.textContent = `#${Math.floor(Math.random() * 200) + 1}`;
+                    break;
 
-            // Check if this is a daily challenge completion
-            if (this.level === 5 || this.level === 10 || this.level === 15 || this.level === 20) {
+                case 'levels':
+                    modalTitle.textContent = `🎉 Level ${this.level} Complete!`;
+                    scoreLabel1.textContent = 'Level:';
+                    scoreValue1.textContent = this.level;
+                    scoreLabelTotal.textContent = 'Level Score:';
+                    shareMessage.textContent = `🎮 Share your Level ${this.level} achievement!`;
+                    finalRank.textContent = '-';
+                    break;
+
+                case 'picker':
+                    modalTitle.textContent = '🎉 Color Matched!';
+                    scoreLabel1.textContent = 'Color:';
+                    scoreValue1.textContent = this.colorName;
+                    scoreLabelTotal.textContent = 'Score:';
+                    shareMessage.textContent = '🎨 Share your color creation skills!';
+                    finalRank.textContent = '-';
+                    break;
+            }
+
+            // For daily mode, track completion
+            if (this.currentMode === 'daily') {
                 this.completeDailyChallenge(totalScore);
             } else {
                 modal.style.display = 'flex';
@@ -629,7 +785,7 @@ class ColorAlchemyGame {
         } else {
             let message = `❌ Game Over! The color was <strong>${this.colorName}</strong>.`;
 
-            if (this.frustrationLevels.includes(this.level)) {
+            if (this.currentMode === 'levels' && this.frustrationLevels.includes(this.level)) {
                 message += `<br>That was a tricky one! Don't give up!`;
             }
 
@@ -654,23 +810,21 @@ class ColorAlchemyGame {
         this.saveDailyChallenge();
         this.savePlayerStats();
 
-        // Show daily challenge modal
-        document.getElementById('dailyResultColor').textContent = this.colorName;
-        document.getElementById('dailyResultTries').textContent = this.tries;
-        document.getElementById('dailyResultScore').textContent = score;
-        document.getElementById('dailyResultRank').textContent = `#${Math.floor(Math.random() * 200) + 1}`;
-
-        document.getElementById('dailyModal').style.display = 'flex';
+        document.getElementById('gameOverModal').style.display = 'flex';
     }
 
     hideModal() {
         document.getElementById('gameOverModal').style.display = 'none';
-        this.levelUp();
-    }
 
-    hideDailyModal() {
-        document.getElementById('dailyModal').style.display = 'none';
-        this.levelUp();
+        if (this.currentMode === 'levels') {
+            this.levelUp();
+        } else {
+            // For daily and picker modes, just reset
+            this.tries = 0;
+            this.resetMix();
+            this.generateTargetColor();
+            this.updateDisplay();
+        }
     }
 
     levelUp() {

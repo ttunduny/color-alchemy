@@ -75,6 +75,49 @@ h1 {
     margin-top: 2px;
 }
 
+/* Mode Selector */
+.mode-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    background: #6c757d;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.mode-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.mode-btn[data-mode="daily"]:hover { background: #ff6b6b; }
+.mode-btn[data-mode="levels"]:hover { background: #4ecdc4; }
+.mode-btn[data-mode="picker"]:hover { background: #45b7d1; }
+
+.mode-btn.active[data-mode="daily"] { background: linear-gradient(135deg, #ff6b6b, #ffa726); }
+.mode-btn.active[data-mode="levels"] { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+.mode-btn.active[data-mode="picker"] { background: linear-gradient(135deg, #45b7d1, #96c93d); }
+
 /* Daily Challenge Banner */
 .daily-challenge {
     background: linear-gradient(135deg, #ff6b6b, #ffa726);
@@ -120,6 +163,55 @@ h1 {
     justify-content: space-between;
     font-size: 0.9em;
     opacity: 0.9;
+}
+
+/* Color Picker Section */
+.color-picker-section {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.color-picker-section h3 {
+    color: #333;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+}
+
+#customColorPicker {
+    width: 80px;
+    height: 80px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#customColorPicker::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+
+#customColorPicker::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+}
+
+.random-options {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.random-options .control-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.8em;
 }
 
 /* Main Game Area - More Compact */
@@ -649,10 +741,6 @@ h1 {
     animation: modalAppear 0.3s ease;
 }
 
-.modal-content.daily-modal {
-    max-width: 450px;
-}
-
 @keyframes modalAppear {
     from {
         opacity: 0;
@@ -689,31 +777,6 @@ h1 {
     color: #333;
 }
 
-.daily-results {
-    margin: 20px 0;
-    text-align: left;
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-.daily-result-item {
-    display: flex;
-    justify-content: space-between;
-    margin: 10px 0;
-    font-size: 1em;
-    padding: 5px 0;
-}
-
-.daily-result-item.highlight {
-    border-top: 2px solid #dee2e6;
-    padding-top: 12px;
-    margin-top: 12px;
-    font-weight: 700;
-    font-size: 1.1em;
-    color: #333;
-}
-
 .share-prompt {
     margin: 20px 0;
     padding: 15px;
@@ -738,7 +801,7 @@ h1 {
     padding: 10px 15px;
 }
 
-#nextLevelBtn, #dailyCloseBtn {
+#nextLevelBtn {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     padding: 12px 30px;
@@ -752,7 +815,7 @@ h1 {
     width: 100%;
 }
 
-#nextLevelBtn:hover, #dailyCloseBtn:hover {
+#nextLevelBtn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
 }
@@ -805,6 +868,10 @@ h1 {
         flex-direction: column;
     }
 
+    .mode-selector {
+        flex-direction: column;
+    }
+
     header {
         flex-direction: column;
         gap: 10px;
@@ -822,6 +889,10 @@ h1 {
     }
 
     .share-buttons {
+        flex-direction: column;
+    }
+
+    .random-options {
         flex-direction: column;
     }
 }

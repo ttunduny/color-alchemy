@@ -27,6 +27,13 @@
         </div>
     </header>
 
+    <!-- Game Mode Selector -->
+    <div class="mode-selector">
+        <button class="mode-btn active" data-mode="daily">🔥 Daily Challenge</button>
+        <button class="mode-btn" data-mode="levels">🎮 Level Mode</button>
+        <button class="mode-btn" data-mode="picker">🎨 Color Picker</button>
+    </div>
+
     <!-- Daily Challenge Banner -->
     <div class="daily-challenge" id="dailyChallenge">
         <div class="daily-header">
@@ -43,10 +50,21 @@
         <!-- Left Column: Target Color -->
         <div class="target-column">
             <div class="target-section">
-                <h2>🎯 Alchemy Target</h2>
+                <h2 id="targetTitle">🎯 Daily Challenge</h2>
                 <div class="target-color" id="targetColor"></div>
                 <div class="color-name" id="colorName">Golden Yellow</div>
                 <div class="color-hint" id="colorHint">Mix Red + Green</div>
+
+                <!-- Color Picker (Hidden by default) -->
+                <div class="color-picker-section" id="colorPickerSection" style="display: none;">
+                    <h3>🎨 Pick Your Color</h3>
+                    <input type="color" id="customColorPicker" value="#ff0000">
+                    <button id="setCustomColor" class="control-btn primary">Set as Target</button>
+                    <div class="random-options">
+                        <button id="randomColor" class="control-btn secondary">🎲 Random Color</button>
+                        <button id="challengeColor" class="control-btn tertiary">🤔 Challenge Me</button>
+                    </div>
+                </div>
 
                 <div class="global-stats">
                     <h3>🌍 Global Stats</h3>
@@ -96,7 +114,7 @@
         <!-- Right Column: Feedback & Info -->
         <div class="info-column">
             <div class="feedback-container">
-                <div class="feedback-header">Alchemy Notes</div>
+                <div class="feedback-header" id="feedbackHeader">Daily Challenge</div>
                 <div class="feedback" id="feedback">Mix colors to match the target!</div>
             </div>
 
@@ -152,11 +170,11 @@
     <!-- Game Over Modal -->
     <div id="gameOverModal" class="modal">
         <div class="modal-content">
-            <h2>🎉 Alchemy Success!</h2>
+            <h2 id="modalTitle">🎉 Daily Challenge Complete!</h2>
             <div class="score-breakdown">
                 <div class="score-item">
-                    <span>Level:</span>
-                    <span id="finalLevel">1</span>
+                    <span id="scoreLabel1">Color:</span>
+                    <span id="scoreValue1">Golden Yellow</span>
                 </div>
                 <div class="score-item">
                     <span>Tries Used:</span>
@@ -167,55 +185,20 @@
                     <span id="finalRank">#---</span>
                 </div>
                 <div class="score-item total">
-                    <span>Alchemy Score:</span>
+                    <span id="scoreLabelTotal">Daily Score:</span>
                     <span id="finalScore">0</span>
                 </div>
             </div>
 
             <div class="share-prompt">
-                <p>🎊 Share your achievement with friends!</p>
+                <p id="shareMessage">🎊 Share your daily achievement with friends!</p>
                 <div class="modal-share-buttons">
                     <button class="share-btn twitter" id="modalShareTwitter">🐦 Share</button>
                     <button class="share-btn facebook" id="modalShareFacebook">📘 Share</button>
                 </div>
             </div>
 
-            <button id="nextLevelBtn">Next Potion →</button>
-        </div>
-    </div>
-
-    <!-- Daily Challenge Modal -->
-    <div id="dailyModal" class="modal">
-        <div class="modal-content daily-modal">
-            <h2>🔥 Daily Challenge Complete!</h2>
-            <div class="daily-results">
-                <div class="daily-result-item">
-                    <span>Today's Color:</span>
-                    <span id="dailyResultColor">Mystic Purple</span>
-                </div>
-                <div class="daily-result-item">
-                    <span>Your Tries:</span>
-                    <span id="dailyResultTries">5</span>
-                </div>
-                <div class="daily-result-item">
-                    <span>Global Rank:</span>
-                    <span id="dailyResultRank">#128</span>
-                </div>
-                <div class="daily-result-item highlight">
-                    <span>Daily Score:</span>
-                    <span id="dailyResultScore">750</span>
-                </div>
-            </div>
-
-            <div class="share-prompt">
-                <p>🏆 Beat your friends in tomorrow's challenge!</p>
-                <div class="modal-share-buttons">
-                    <button class="share-btn twitter" id="dailyShareTwitter">🐦 Share Score</button>
-                    <button class="share-btn challenge" id="dailyChallengeFriends">🔥 Challenge Friends</button>
-                </div>
-            </div>
-
-            <button id="dailyCloseBtn">Continue Journey</button>
+            <button id="nextLevelBtn">Continue →</button>
         </div>
     </div>
 </div>
