@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Lab - Mix & Match!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="game-container">
+    <header>
+        <h1>🎨 Color Lab</h1>
+        <div class="game-stats">
+            <div class="stat">
+                <span class="stat-label">Level</span>
+                <span id="level" class="stat-value">1</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Tries</span>
+                <span id="tries" class="stat-value">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Best</span>
+                <span id="best" class="stat-value">-</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="game-area">
+        <!-- Left Column: Target Color -->
+        <div class="target-column">
+            <div class="target-section">
+                <h2>🎯 Match This Color</h2>
+                <div class="target-color" id="targetColor"></div>
+                <div class="color-name" id="colorName">Yellow</div>
+                <div class="color-hint" id="colorHint">Mix Red + Green</div>
+            </div>
+        </div>
+
+        <!-- Middle Column: Mixing Area & Controls -->
+        <div class="mixing-column">
+            <div class="mixing-area" id="mixingArea">
+                <div class="current-mix" id="currentMix"></div>
+                <div class="mix-composition" id="mixComposition">Drag or click colors below</div>
+            </div>
+
+            <div class="color-controls">
+                <div class="color-palette">
+                    <div class="color-item">
+                        <div class="color-dropper red" data-color="red" draggable="true"></div>
+                        <button class="mix-btn" data-color="red">Red (R)</button>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-dropper green" data-color="green" draggable="true"></div>
+                        <button class="mix-btn" data-color="green">Green (G)</button>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-dropper blue" data-color="blue" draggable="true"></div>
+                        <button class="mix-btn" data-color="blue">Blue (B)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="checkBtn" class="control-btn primary">Check (Enter)</button>
+                <button id="resetBtn" class="control-btn secondary">Reset (Space)</button>
+                <button id="hintBtn" class="control-btn tertiary">Hint (H)</button>
+            </div>
+        </div>
+
+        <!-- Right Column: Feedback & Info -->
+        <div class="info-column">
+            <div class="feedback-container">
+                <div class="feedback-header">Game Feedback</div>
+                <div class="feedback" id="feedback">Mix colors to match the target!</div>
+            </div>
+
+            <div class="instructions">
+                <h3>How to Play</h3>
+                <ul>
+                    <li>🎯 Match the target color</li>
+                    <li>🎨 Mix colors using buttons</li>
+                    <li>⚡ Use R, G, B keys</li>
+                    <li>💡 Hints cost 1 try</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ad Space Container -->
+    <div class="ad-container">
+        <div class="ad-placeholder" id="adPlaceholder">
+            <div class="ad-label">Advertisement</div>
+            <div class="ad-content">
+                <div class="ad-mock">Your Ad Here</div>
+                <div class="ad-size">320×100</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <h2>🎉 Level Complete!</h2>
+            <div class="score-breakdown">
+                <div class="score-item">
+                    <span>Level:</span>
+                    <span id="finalLevel">1</span>
+                </div>
+                <div class="score-item">
+                    <span>Tries Used:</span>
+                    <span id="finalTries">0</span>
+                </div>
+                <div class="score-item total">
+                    <span>Score:</span>
+                    <span id="finalScore">0</span>
+                </div>
+            </div>
+            <button id="nextLevelBtn">Next Level →</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
