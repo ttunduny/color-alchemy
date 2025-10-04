@@ -21,11 +21,23 @@
                 <span id="tries" class="stat-value">0</span>
             </div>
             <div class="stat">
-                <span class="stat-label">Best</span>
-                <span id="best" class="stat-value">-</span>
+                <span class="stat-label">Rank</span>
+                <span id="rank" class="stat-value">-</span>
             </div>
         </div>
     </header>
+
+    <!-- Daily Challenge Banner -->
+    <div class="daily-challenge" id="dailyChallenge">
+        <div class="daily-header">
+            <span class="daily-badge">🔥 DAILY CHALLENGE</span>
+            <span class="daily-timer" id="dailyTimer">24:00:00</span>
+        </div>
+        <div class="daily-stats">
+            <span>Today's Color: <strong id="dailyColorName">Mystic Purple</strong></span>
+            <span>Players: <strong id="dailyPlayers">0</strong></span>
+        </div>
+    </div>
 
     <div class="game-area">
         <!-- Left Column: Target Color -->
@@ -33,8 +45,20 @@
             <div class="target-section">
                 <h2>🎯 Alchemy Target</h2>
                 <div class="target-color" id="targetColor"></div>
-                <div class="color-name" id="colorName">Yellow</div>
+                <div class="color-name" id="colorName">Golden Yellow</div>
                 <div class="color-hint" id="colorHint">Mix Red + Green</div>
+
+                <div class="global-stats">
+                    <h3>🌍 Global Stats</h3>
+                    <div class="stat-item">
+                        <span>Today's Players:</span>
+                        <span id="globalPlayers">1,234</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Your Rank:</span>
+                        <span id="globalRank">#456</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -76,15 +100,40 @@
                 <div class="feedback" id="feedback">Mix colors to match the target!</div>
             </div>
 
-            <div class="instructions">
-                <h3>Alchemy Guide</h3>
-                <ul>
-                    <li>🎯 Match the target color</li>
-                    <li>🎨 Mix colors using buttons</li>
-                    <li>⚡ Use R, G, B keys</li>
-                    <li>💡 Hints cost 1 try</li>
-                    <li>🔥 Challenge levels await!</li>
-                </ul>
+            <div class="social-section">
+                <h3>📢 Share Your Magic</h3>
+                <div class="share-buttons">
+                    <button class="share-btn twitter" id="shareTwitter">🐦 Twitter</button>
+                    <button class="share-btn facebook" id="shareFacebook">📘 Facebook</button>
+                    <button class="share-btn copy" id="shareCopy">📋 Copy Link</button>
+                </div>
+                <div class="share-stats">
+                    <div class="share-stat">
+                        <span>Today's Shares:</span>
+                        <span id="todayShares">1,892</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leaderboard">
+                <h3>🏆 Today's Leaders</h3>
+                <div class="leaderboard-list" id="leaderboardList">
+                    <div class="leaderboard-item">
+                        <span class="rank">1</span>
+                        <span class="player">You</span>
+                        <span class="score">-</span>
+                    </div>
+                    <div class="leaderboard-item">
+                        <span class="rank">2</span>
+                        <span class="player">ColorMaster</span>
+                        <span class="score">850</span>
+                    </div>
+                    <div class="leaderboard-item">
+                        <span class="rank">3</span>
+                        <span class="player">AlchemyPro</span>
+                        <span class="score">820</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -113,12 +162,60 @@
                     <span>Tries Used:</span>
                     <span id="finalTries">0</span>
                 </div>
+                <div class="score-item">
+                    <span>Global Rank:</span>
+                    <span id="finalRank">#---</span>
+                </div>
                 <div class="score-item total">
                     <span>Alchemy Score:</span>
                     <span id="finalScore">0</span>
                 </div>
             </div>
+
+            <div class="share-prompt">
+                <p>🎊 Share your achievement with friends!</p>
+                <div class="modal-share-buttons">
+                    <button class="share-btn twitter" id="modalShareTwitter">🐦 Share</button>
+                    <button class="share-btn facebook" id="modalShareFacebook">📘 Share</button>
+                </div>
+            </div>
+
             <button id="nextLevelBtn">Next Potion →</button>
+        </div>
+    </div>
+
+    <!-- Daily Challenge Modal -->
+    <div id="dailyModal" class="modal">
+        <div class="modal-content daily-modal">
+            <h2>🔥 Daily Challenge Complete!</h2>
+            <div class="daily-results">
+                <div class="daily-result-item">
+                    <span>Today's Color:</span>
+                    <span id="dailyResultColor">Mystic Purple</span>
+                </div>
+                <div class="daily-result-item">
+                    <span>Your Tries:</span>
+                    <span id="dailyResultTries">5</span>
+                </div>
+                <div class="daily-result-item">
+                    <span>Global Rank:</span>
+                    <span id="dailyResultRank">#128</span>
+                </div>
+                <div class="daily-result-item highlight">
+                    <span>Daily Score:</span>
+                    <span id="dailyResultScore">750</span>
+                </div>
+            </div>
+
+            <div class="share-prompt">
+                <p>🏆 Beat your friends in tomorrow's challenge!</p>
+                <div class="modal-share-buttons">
+                    <button class="share-btn twitter" id="dailyShareTwitter">🐦 Share Score</button>
+                    <button class="share-btn challenge" id="dailyChallengeFriends">🔥 Challenge Friends</button>
+                </div>
+            </div>
+
+            <button id="dailyCloseBtn">Continue Journey</button>
         </div>
     </div>
 </div>

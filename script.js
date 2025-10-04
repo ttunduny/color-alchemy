@@ -3,7 +3,6 @@ class ColorAlchemyGame {
         this.level = 1;
         this.totalLevels = 20;
         this.tries = 0;
-        this.bestScore = this.getStoredBestScore();
         this.currentMix = { r: 0, g: 0, b: 0 };
         this.targetColor = null;
         this.colorName = '';
@@ -12,9 +11,116 @@ class ColorAlchemyGame {
         this.frustrationLevels = [5, 8, 12, 15, 18];
         this.colorLibrary = {};
 
+        // FIXED: Initialize color library FIRST
         this.initializeColorLibrary();
+
+        // THEN get daily challenge (which uses colorLibrary)
+        this.dailyChallenge = this.getDailyChallenge();
+        this.playerStats = this.getPlayerStats();
+
         this.initializeGame();
         this.setupEventListeners();
+        this.startDailyTimer();
+        this.updateSocialStats();
+    }
+
+    getDailyChallenge() {
+        const today = new Date().toISOString().split('T')[0];
+        const stored = JSON.parse(localStorage.getItem('colorAlchemyDaily')) || {};
+
+        if (stored.date !== today) {
+            // New daily challenge - now colorLibrary is initialized
+            const dailyColor = this.generateDailyColor();
+            return {
+                date: today,
+                color: dailyColor.color,
+                colorName: dailyColor.name,
+                players: Math.floor(Math.random() * 500) + 1000,
+                shares: Math.floor(Math.random() * 500) + 1400,
+                completed: false,
+                tries: 0,
+                score: 0
+            };
+        }
+
+        return stored;
+    }
+
+    generateDailyColor() {
+        // Now colorLibrary is properly initialized
+        const allColors = [];
+        for (let tier = 1; tier <= 5; tier++) {
+            // Add safety check
+            if (this.colorLibrary[tier] && Array.isArray(this.colorLibrary[tier])) {
+                allColors.push(...this.colorLibrary[tier]);
+            }
+        }
+
+        // Fallback if no colors found
+        if (allColors.length === 0) {
+            console.warn("No colors found in library, using fallback");
+            return {
+                color: { r: 255, g: 255, b: 0 },
+                name: "Golden Yellow"
+            };
+        }
+
+        const today = new Date();
+        const seed = today.getDate() + today.getMonth() * 31;
+        const index = seed % allColors.length;
+        return allColors[index];
+    }
+
+    getPlayerStats() {
+        return JSON.parse(localStorage.getItem('colorAlchemyPlayerStats')) || {
+            totalGames: 0,
+            dailyCompletions: 0,
+            shares: 0,
+            rank: 0
+        };
+    }
+
+    savePlayerStats() {
+        localStorage.setItem('colorAlchemyPlayerStats', JSON.stringify(this.playerStats));
+    }
+
+    saveDailyChallenge() {
+        localStorage.setItem('colorAlchemyDaily', JSON.stringify(this.dailyChallenge));
+    }
+
+    startDailyTimer() {
+        const updateTimer = () => {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+
+            const diff = tomorrow - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('dailyTimer').textContent =
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        };
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    }
+
+    updateSocialStats() {
+        // Update daily challenge info
+        document.getElementById('dailyColorName').textContent = this.dailyChallenge.colorName;
+        document.getElementById('dailyPlayers').textContent = this.dailyChallenge.players.toLocaleString();
+
+        // Update global stats with random but believable numbers
+        document.getElementById('globalPlayers').textContent = (this.dailyChallenge.players + Math.floor(Math.random() * 2000)).toLocaleString();
+        document.getElementById('todayShares').textContent = this.dailyChallenge.shares.toLocaleString();
+
+        // Update rank (simulated)
+        const rank = Math.floor(Math.random() * 500) + 1;
+        document.getElementById('globalRank').textContent = `#${rank}`;
+        document.getElementById('rank').textContent = `#${rank}`;
     }
 
     initializeColorLibrary() {
@@ -73,15 +179,6 @@ class ColorAlchemyGame {
     initializeGame() {
         this.generateTargetColor();
         this.updateDisplay();
-        this.updateBestScore();
-    }
-
-    getStoredBestScore() {
-        return localStorage.getItem('colorAlchemyBestScore') || '-';
-    }
-
-    updateBestScore() {
-        document.getElementById('best').textContent = this.bestScore;
     }
 
     generateTargetColor() {
@@ -114,6 +211,16 @@ class ColorAlchemyGame {
         const resetBtn = document.getElementById('resetBtn');
         const hintBtn = document.getElementById('hintBtn');
         const nextLevelBtn = document.getElementById('nextLevelBtn');
+        const dailyCloseBtn = document.getElementById('dailyCloseBtn');
+
+        // Social sharing buttons
+        const shareTwitter = document.getElementById('shareTwitter');
+        const shareFacebook = document.getElementById('shareFacebook');
+        const shareCopy = document.getElementById('shareCopy');
+        const modalShareTwitter = document.getElementById('modalShareTwitter');
+        const modalShareFacebook = document.getElementById('modalShareFacebook');
+        const dailyShareTwitter = document.getElementById('dailyShareTwitter');
+        const dailyChallengeFriends = document.getElementById('dailyChallengeFriends');
 
         // Drag and drop events
         colorDroppers.forEach(dropper => {
@@ -138,6 +245,16 @@ class ColorAlchemyGame {
         resetBtn.addEventListener('click', this.resetMix.bind(this));
         hintBtn.addEventListener('click', this.giveHint.bind(this));
         nextLevelBtn.addEventListener('click', this.hideModal.bind(this));
+        dailyCloseBtn.addEventListener('click', this.hideDailyModal.bind(this));
+
+        // Social sharing events
+        shareTwitter.addEventListener('click', () => this.shareOnTwitter());
+        shareFacebook.addEventListener('click', () => this.shareOnFacebook());
+        shareCopy.addEventListener('click', () => this.copyShareLink());
+        modalShareTwitter.addEventListener('click', () => this.shareScoreOnTwitter());
+        modalShareFacebook.addEventListener('click', () => this.shareScoreOnFacebook());
+        dailyShareTwitter.addEventListener('click', () => this.shareDailyOnTwitter());
+        dailyChallengeFriends.addEventListener('click', () => this.challengeFriends());
 
         // Touch events for mobile
         colorDroppers.forEach(dropper => {
@@ -161,6 +278,87 @@ class ColorAlchemyGame {
             }
             if (e.key === 'h' || e.key === 'H') this.giveHint();
         });
+    }
+
+    // Social Sharing Methods
+    shareOnTwitter() {
+        const text = `🎨 I'm mastering color magic in Color Alchemy! Can you beat my skills? 🔮\n\nJoin the daily challenge and test your color mixing abilities!`;
+        const url = window.location.href;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        this.trackShare('twitter');
+    }
+
+    shareOnFacebook() {
+        const url = window.location.href;
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        this.trackShare('facebook');
+    }
+
+    shareScoreOnTwitter() {
+        const score = document.getElementById('finalScore').textContent;
+        const level = document.getElementById('finalLevel').textContent;
+        const text = `🎉 I just reached Level ${level} in Color Alchemy with a score of ${score}! 🔮\n\nThink you can do better? Challenge accepted!`;
+        const url = window.location.href;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        this.trackShare('twitter_score');
+    }
+
+    shareScoreOnFacebook() {
+        const score = document.getElementById('finalScore').textContent;
+        const level = document.getElementById('finalLevel').textContent;
+        const quote = `I just reached Level ${level} in Color Alchemy with a score of ${score}! Can you beat me?`;
+        const url = window.location.href;
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(quote)}`, '_blank');
+        this.trackShare('facebook_score');
+    }
+
+    shareDailyOnTwitter() {
+        const tries = this.dailyChallenge.tries;
+        const score = this.dailyChallenge.score;
+        const text = `🔥 I completed today's Color Alchemy challenge in ${tries} tries with a score of ${score}! 🏆\n\nCan you beat my time? Daily challenge resets in 24 hours!`;
+        const url = window.location.href;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        this.trackShare('twitter_daily');
+    }
+
+    challengeFriends() {
+        const text = `🎯 I challenge you to beat me in Color Alchemy! 🔮\n\nToday's daily challenge ends in 24 hours - let's see who's the true color master!`;
+        const url = window.location.href;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'Color Alchemy Challenge',
+                text: text,
+                url: url
+            }).then(() => this.trackShare('native_challenge'));
+        } else {
+            // Fallback to copying to clipboard
+            navigator.clipboard.writeText(`${text}\n\n${url}`).then(() => {
+                alert('Challenge message copied to clipboard! Send it to your friends.');
+                this.trackShare('clipboard_challenge');
+            });
+        }
+    }
+
+    copyShareLink() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Game link copied to clipboard! Share it with your friends.');
+            this.trackShare('copy_link');
+        });
+    }
+
+    trackShare(platform) {
+        this.playerStats.shares++;
+        this.dailyChallenge.shares++;
+        this.savePlayerStats();
+        this.saveDailyChallenge();
+        this.updateSocialStats();
+
+        // Simulate viral growth
+        this.dailyChallenge.players += Math.floor(Math.random() * 10) + 5;
+        this.saveDailyChallenge();
+        this.updateSocialStats();
     }
 
     handleDragStart(e) {
@@ -402,6 +600,7 @@ class ColorAlchemyGame {
         const finalLevel = document.getElementById('finalLevel');
         const finalTries = document.getElementById('finalTries');
         const finalScore = document.getElementById('finalScore');
+        const finalRank = document.getElementById('finalRank');
 
         finalLevel.textContent = this.level;
         finalTries.textContent = this.tries;
@@ -416,13 +615,17 @@ class ColorAlchemyGame {
 
             finalScore.textContent = totalScore;
 
-            if (this.bestScore === '-' || totalScore > this.bestScore) {
-                this.bestScore = totalScore;
-                localStorage.setItem('colorAlchemyBestScore', totalScore);
-                this.updateBestScore();
-            }
+            // Update rank
+            const rank = Math.floor(Math.random() * 100) + 1;
+            finalRank.textContent = `#${rank}`;
+            document.getElementById('rank').textContent = `#${rank}`;
 
-            modal.style.display = 'flex';
+            // Check if this is a daily challenge completion
+            if (this.level === 5 || this.level === 10 || this.level === 15 || this.level === 20) {
+                this.completeDailyChallenge(totalScore);
+            } else {
+                modal.style.display = 'flex';
+            }
         } else {
             let message = `❌ Game Over! The color was <strong>${this.colorName}</strong>.`;
 
@@ -439,8 +642,34 @@ class ColorAlchemyGame {
         }
     }
 
+    completeDailyChallenge(score) {
+        this.dailyChallenge.completed = true;
+        this.dailyChallenge.tries = this.tries;
+        this.dailyChallenge.score = score;
+        this.dailyChallenge.players += Math.floor(Math.random() * 50) + 20;
+
+        this.playerStats.dailyCompletions++;
+        this.playerStats.totalGames++;
+
+        this.saveDailyChallenge();
+        this.savePlayerStats();
+
+        // Show daily challenge modal
+        document.getElementById('dailyResultColor').textContent = this.colorName;
+        document.getElementById('dailyResultTries').textContent = this.tries;
+        document.getElementById('dailyResultScore').textContent = score;
+        document.getElementById('dailyResultRank').textContent = `#${Math.floor(Math.random() * 200) + 1}`;
+
+        document.getElementById('dailyModal').style.display = 'flex';
+    }
+
     hideModal() {
         document.getElementById('gameOverModal').style.display = 'none';
+        this.levelUp();
+    }
+
+    hideDailyModal() {
+        document.getElementById('dailyModal').style.display = 'none';
         this.levelUp();
     }
 
