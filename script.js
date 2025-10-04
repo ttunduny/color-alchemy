@@ -1,15 +1,15 @@
-class ColorMixingGame {
+class ColorAlchemyGame {
     constructor() {
         this.level = 1;
-        this.totalLevels = 20; // Increased for progression
+        this.totalLevels = 20;
         this.tries = 0;
         this.bestScore = this.getStoredBestScore();
-        this.currentMix = { r: 0, g: 0, b: 0 }; // Start from black
+        this.currentMix = { r: 0, g: 0, b: 0 };
         this.targetColor = null;
         this.colorName = '';
         this.mixedColors = [];
         this.maxTries = 8;
-        this.frustrationLevels = [5, 8, 12, 15, 18]; // Levels designed to be tricky
+        this.frustrationLevels = [5, 8, 12, 15, 18];
         this.colorLibrary = {};
 
         this.initializeColorLibrary();
@@ -20,44 +20,44 @@ class ColorMixingGame {
     initializeColorLibrary() {
         // Level 1-4: Basic secondary colors (Easy)
         this.colorLibrary[1] = [
-            { color: { r: 255, g: 255, b: 0 }, name: "Yellow", hint: "Red + Green" },
-            { color: { r: 255, g: 0, b: 255 }, name: "Magenta", hint: "Red + Blue" },
-            { color: { r: 0, g: 255, b: 255 }, name: "Cyan", hint: "Green + Blue" }
+            { color: { r: 255, g: 255, b: 0 }, name: "Golden Yellow", hint: "Red + Green" },
+            { color: { r: 255, g: 0, b: 255 }, name: "Magical Magenta", hint: "Red + Blue" },
+            { color: { r: 0, g: 255, b: 255 }, name: "Enchanted Cyan", hint: "Green + Blue" }
         ];
 
         // Level 5-8: Tertiary colors & simple mixes (Medium)
         this.colorLibrary[2] = [
-            { color: { r: 255, g: 128, b: 0 }, name: "Orange", hint: "Mostly Red + Some Green" },
-            { color: { r: 128, g: 0, b: 255 }, name: "Purple", hint: "Mostly Blue + Some Red" },
-            { color: { r: 0, g: 255, b: 128 }, name: "Mint", hint: "Mostly Green + Some Blue" },
-            { color: { r: 255, g: 255, b: 128 }, name: "Light Yellow", hint: "Yellow + More Green" },
-            { color: { r: 255, g: 128, b: 128 }, name: "Pink", hint: "Red + Touch of Green/Blue" }
+            { color: { r: 255, g: 128, b: 0 }, name: "Alchemy Orange", hint: "Mostly Red + Some Green" },
+            { color: { r: 128, g: 0, b: 255 }, name: "Royal Purple", hint: "Mostly Blue + Some Red" },
+            { color: { r: 0, g: 255, b: 128 }, name: "Mystic Mint", hint: "Mostly Green + Some Blue" },
+            { color: { r: 255, g: 255, b: 128 }, name: "Light Elixir", hint: "Yellow + More Green" },
+            { color: { r: 255, g: 128, b: 128 }, name: "Potion Pink", hint: "Red + Touch of Green/Blue" }
         ];
 
         // Level 9-12: Complex colors (Hard)
         this.colorLibrary[3] = [
-            { color: { r: 128, g: 128, b: 128 }, name: "Gray", hint: "Equal parts of all colors" },
-            { color: { r: 192, g: 192, b: 192 }, name: "Silver", hint: "Light gray - careful with ratios" },
-            { color: { r: 160, g: 120, b: 80 }, name: "Brown", hint: "Red + Green, very little Blue" },
-            { color: { r: 200, g: 160, b: 120 }, name: "Tan", hint: "Brown with more Green" },
-            { color: { r: 100, g: 100, b: 150 }, name: "Slate Blue", hint: "Balanced with Blue emphasis" }
+            { color: { r: 128, g: 128, b: 128 }, name: "Wizard Gray", hint: "Equal parts of all colors" },
+            { color: { r: 192, g: 192, b: 192 }, name: "Silver Essence", hint: "Light gray - careful with ratios" },
+            { color: { r: 160, g: 120, b: 80 }, name: "Ancient Brown", hint: "Red + Green, very little Blue" },
+            { color: { r: 200, g: 160, b: 120 }, name: "Desert Sand", hint: "Brown with more Green" },
+            { color: { r: 100, g: 100, b: 150 }, name: "Twilight Blue", hint: "Balanced with Blue emphasis" }
         ];
 
         // Level 13-16: Very complex colors (Very Hard)
         this.colorLibrary[4] = [
-            { color: { r: 180, g: 120, b: 160 }, name: "Dusty Rose", hint: "Specific Red-Green-Blue ratio" },
-            { color: { r: 120, g: 180, b: 140 }, name: "Sage Green", hint: "Green dominant, balanced others" },
+            { color: { r: 180, g: 120, b: 160 }, name: "Mystic Rose", hint: "Specific Red-Green-Blue ratio" },
+            { color: { r: 120, g: 180, b: 140 }, name: "Forest Sage", hint: "Green dominant, balanced others" },
             { color: { r: 140, g: 100, b: 180 }, name: "Amethyst", hint: "Blue-Red balance, less Green" },
             { color: { r: 200, g: 140, b: 100 }, name: "Terracotta", hint: "Warm earth tone" },
-            { color: { r: 100, g: 140, b: 200 }, name: "Steel Blue", hint: "Cool blue-gray" }
+            { color: { r: 100, g: 140, b: 200 }, name: "Ocean Steel", hint: "Cool blue-gray" }
         ];
 
         // Level 17-20: Expert colors (Frustrating!)
         this.colorLibrary[5] = [
             { color: { r: 150, g: 150, b: 150 }, name: "Perfect Gray", hint: "EXACT equal parts - very sensitive" },
-            { color: { r: 220, g: 180, b: 140 }, name: "Beige", hint: "Very specific warm light tone" },
+            { color: { r: 220, g: 180, b: 140 }, name: "Ancient Beige", hint: "Very specific warm light tone" },
             { color: { r: 130, g: 170, b: 130 }, name: "Moss Green", hint: "Green with subtle Red/Blue balance" },
-            { color: { r: 170, g: 130, b: 170 }, name: "Mauve", hint: "Difficult purple-gray balance" },
+            { color: { r: 170, g: 130, b: 170 }, name: "Royal Mauve", hint: "Difficult purple-gray balance" },
             { color: { r: 140, g: 140, b: 180 }, name: "Twilight", hint: "Almost gray but blue-tinted" }
         ];
     }
@@ -77,7 +77,7 @@ class ColorMixingGame {
     }
 
     getStoredBestScore() {
-        return localStorage.getItem('colorLabBestScore') || '-';
+        return localStorage.getItem('colorAlchemyBestScore') || '-';
     }
 
     updateBestScore() {
@@ -418,7 +418,7 @@ class ColorMixingGame {
 
             if (this.bestScore === '-' || totalScore > this.bestScore) {
                 this.bestScore = totalScore;
-                localStorage.setItem('colorLabBestScore', totalScore);
+                localStorage.setItem('colorAlchemyBestScore', totalScore);
                 this.updateBestScore();
             }
 
@@ -519,11 +519,6 @@ class ColorMixingGame {
         } else {
             mixComposition.textContent = 'Drag or click colors below';
         }
-
-        // Show difficulty indicator
-        const difficulty = this.getDifficultyTier();
-        const difficultyStars = '★'.repeat(difficulty) + '☆'.repeat(5-difficulty);
-        document.getElementById('colorHint').title = `Difficulty: ${difficultyStars}`;
     }
 
     rgbToString(rgb) {
@@ -533,5 +528,5 @@ class ColorMixingGame {
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new ColorMixingGame();
+    new ColorAlchemyGame();
 });

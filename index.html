@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Lab - Mix & Match!</title>
+    <title>Color Alchemy - Mix Magic with Colors!</title>
+    <meta name="description" content="Mix primary colors to create magical hues in this addictive color mixing game. Perfect your alchemy skills across 20 challenging levels!">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="game-container">
     <header>
-        <h1>🎨 Color Lab</h1>
+        <h1>🔮 Color Alchemy</h1>
         <div class="game-stats">
             <div class="stat">
                 <span class="stat-label">Level</span>
@@ -30,7 +31,7 @@
         <!-- Left Column: Target Color -->
         <div class="target-column">
             <div class="target-section">
-                <h2>🎯 Match This Color</h2>
+                <h2>🎯 Alchemy Target</h2>
                 <div class="target-color" id="targetColor"></div>
                 <div class="color-name" id="colorName">Yellow</div>
                 <div class="color-hint" id="colorHint">Mix Red + Green</div>
@@ -71,17 +72,18 @@
         <!-- Right Column: Feedback & Info -->
         <div class="info-column">
             <div class="feedback-container">
-                <div class="feedback-header">Game Feedback</div>
+                <div class="feedback-header">Alchemy Notes</div>
                 <div class="feedback" id="feedback">Mix colors to match the target!</div>
             </div>
 
             <div class="instructions">
-                <h3>How to Play</h3>
+                <h3>Alchemy Guide</h3>
                 <ul>
                     <li>🎯 Match the target color</li>
                     <li>🎨 Mix colors using buttons</li>
                     <li>⚡ Use R, G, B keys</li>
                     <li>💡 Hints cost 1 try</li>
+                    <li>🔥 Challenge levels await!</li>
                 </ul>
             </div>
         </div>
@@ -101,7 +103,7 @@
     <!-- Game Over Modal -->
     <div id="gameOverModal" class="modal">
         <div class="modal-content">
-            <h2>🎉 Level Complete!</h2>
+            <h2>🎉 Alchemy Success!</h2>
             <div class="score-breakdown">
                 <div class="score-item">
                     <span>Level:</span>
@@ -112,11 +114,11 @@
                     <span id="finalTries">0</span>
                 </div>
                 <div class="score-item total">
-                    <span>Score:</span>
+                    <span>Alchemy Score:</span>
                     <span id="finalScore">0</span>
                 </div>
             </div>
-            <button id="nextLevelBtn">Next Level →</button>
+            <button id="nextLevelBtn">Next Potion →</button>
         </div>
     </div>
 </div>
