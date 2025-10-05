@@ -3,198 +3,566 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Alchemy 🎨🔮</title>
-    <link rel="stylesheet" href="style.css">
+    <title>CodeGuess Daily - Crack the Code!</title>
+    <meta name="description" content="Daily color code guessing game like Mastermind. Solve the puzzle, share your streak, and challenge friends!">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQ29kZUd1ZXNzIERhaWx5Iiwic2hvcnRfbmFtZSI6IkNvZGVHdWVzcyIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZjhmOWZhIiwidGhlbWVfY29sb3IiOiIjMDA3YmZmIn0=">
+    <meta name="theme-color" content="#007bff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CodeGuess">
+    <!-- Open Graph for Sharing -->
+    <meta property="og:title" content="CodeGuess Daily">
+    <meta property="og:description" content="Join the daily code-cracking challenge!">
+    <meta property="og:image" content="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRkYwMDAwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db2RlR3Vlc3M8L3RleHQ+PC9zdmc+">
+    <meta property="og:url" content="https://yourdomain.com/codeguess.html">
+    <!-- Google Analytics (replace UA-XXXXX-Y with your ID) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-XXXXX-Y"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-XXXXX-Y');
+    </script>
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-dark: #212529;
+            --text-light: #333;
+            --text-dark: #f8f9fa;
+            --card-light: white;
+            --card-dark: #343a40;
+            --accent: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+        }
+        [data-theme="dark"] {
+            --bg-light: var(--bg-dark);
+            --text-light: var(--text-dark);
+            --card-light: var(--card-dark);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-light);
+            margin: 0;
+            padding: 10px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .game-container {
+            max-width: 450px;
+            width: 100%;
+            margin: 0 auto;
+            background: var(--card-light);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+            transition: background 0.3s;
+        }
+        h1 { margin: 0 0 10px; font-size: 1.5em; font-weight: 600; }
+        p { margin: 0 0 20px; font-size: 0.9em; opacity: 0.8; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .streak { background: var(--success); color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600; }
+        .theme-toggle { background: none; border: 1px solid var(--accent); color: var(--accent); padding: 8px; border-radius: 50%; cursor: pointer; }
+        .tab-container {
+            display: flex; background: rgba(0,123,255,0.1); border-radius: 8px; overflow: hidden; margin-bottom: 20px;
+        }
+        .tab-btn { flex: 1; background: transparent; color: var(--accent); border: none; padding: 12px; cursor: pointer; font-weight: 500; transition: background 0.2s; }
+        .tab-btn.active { background: var(--accent); color: white; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .level-info { background: rgba(0,123,255,0.1); padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: 500; }
+        .color-palette { display: flex; justify-content: center; gap: 8px; margin: 20px 0; flex-wrap: wrap; }
+        .color-btn {
+            width: 50px; height: 50px; border: 3px solid transparent; border-radius: 8px; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .color-btn:hover { transform: scale(1.05); border-color: black; }
+        .color-btn.selected { border-color: black; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .guesses { margin: 20px 0; display: flex; flex-direction: column; gap: 10px; }
+        .guess-row { display: flex; justify-content: center; gap: 8px; align-items: center; }
+        .square {
+            width: 50px; height: 50px; border: 2px solid #e9ecef; border-radius: 4px; background: var(--bg-light);
+            transition: all 0.2s; position: relative; overflow: hidden;
+        }
+        .square.filled { border-color: black; }
+        .square::after { content: ''; position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; background: inherit; }
+        .feedback { display: flex; gap: 4px; margin-left: 10px; min-width: 50px; justify-content: center; }
+        .black-pin, .white-pin { width: 16px; height: 16px; border-radius: 50%; transition: transform 0.2s; }
+        .black-pin { background: black; }
+        .white-pin { background: white; border: 2px solid black; }
+        .black-pin.pop, .white-pin.pop { transform: scale(1.2); }
+        #message { margin: 20px 0; font-weight: 500; font-size: 1em; min-height: 20px; }
+        .buttons { display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+        button {
+            background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 8px;
+            cursor: pointer; font-weight: 500; transition: all 0.2s; min-width: 100px;
+        }
+        button:hover:not(:disabled) { background: #0056b3; transform: translateY(-1px); }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .share-btn { background: var(--success); }
+        .share-btn:hover { background: #218838; }
+        #daily-date, #level-display { font-size: 0.8em; opacity: 0.7; margin-top: 10px; }
+        .played-today { background: rgba(108,117,125,0.1); padding: 10px; border-radius: 8px; margin: 10px 0; }
+        .ad-placeholder { background: #f0f0f0; padding: 10px; border-radius: 8px; margin: 20px 0; text-align: center; font-size: 0.8em; color: #666; }
+        /* Mobile */
+        @media (max-width: 480px) {
+            .color-btn, .square { width: 45px; height: 45px; }
+            .color-palette { gap: 6px; }
+            .guess-row { gap: 6px; }
+            .feedback { gap: 3px; min-width: 45px; }
+            .black-pin, .white-pin { width: 14px; height: 14px; }
+            button { padding: 10px 20px; font-size: 0.9em; }
+            .buttons, .tab-container { flex-direction: column; }
+            .header { flex-direction: column; gap: 10px; }
+            .header-right { justify-content: center; }
+        }
+        /* Accessibility */
+        button:focus, .color-btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    </style>
 </head>
-<body>
+<body data-theme="light">
 <div class="game-container">
-    <header>
-        <h1>🔮 Color Alchemy</h1>
-        <div class="game-stats">
-            <div class="stat">
-                <div class="stat-label">Level</div>
-                <div class="stat-value" id="level">1</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">Tries</div>
-                <div class="stat-value" id="tries">0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">Rank</div>
-                <div class="stat-value" id="rank">-</div>
-            </div>
-        </div>
-    </header>
-
-    <div class="mode-selector">
-        <button class="mode-btn active" data-mode="daily">🔥 Daily Challenge</button>
-        <button class="mode-btn" data-mode="levels">🎮 Level Mode</button>
-        <button class="mode-btn" data-mode="picker">🎨 Color Picker</button>
-    </div>
-
-    <div id="dailyChallenge" class="daily-challenge">
-        <div class="daily-header">
-            <div class="daily-badge">🔥 DAILY CHALLENGE</div>
-            <div class="daily-timer" id="dailyTimer">24:00:00</div>
-        </div>
-        <div class="daily-stats">
-            <div>Today's Color: <span id="dailyColorName">Mystic Purple</span></div>
-            <div>Players: <span id="dailyPlayers">0</span></div>
+    <div class="header">
+        <h1>CodeGuess Daily</h1>
+        <div class="header-right">
+            <span class="streak" id="streak">Streak: 0</span>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙</button>
         </div>
     </div>
+    <p>Crack the daily 4-color code! ● Black: correct color & position. ○ White: correct color, wrong spot. No duplicates!</p>
 
-    <div class="game-area">
-        <div class="target-column">
-            <div class="target-section">
-                <h2 id="targetTitle">🎯 Daily Challenge</h2>
-                <div class="target-color" id="targetColor"></div>
-                <div class="color-name" id="colorName">Golden Yellow</div>
-                <div class="color-hint" id="colorHint">Mix Red + Green</div>
-            </div>
-            <div class="global-stats">
-                <h3>🌍 Global Stats</h3>
-                <div class="stat-item">
-                    <span>Today's Players:</span>
-                    <span id="globalPlayers">1,234</span>
-                </div>
-                <div class="stat-item">
-                    <span>Your Rank:</span>
-                    <span id="globalRank">#456</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="mixing-column">
-            <div class="mixing-area" id="mixingArea">
-                <div class="cauldron" id="cauldron">
-                    <div class="cauldron-handle"></div>
-                    <div class="cauldron-body" id="cauldronBody">
-                        <div class="current-mix" id="currentMix"></div>
-                    </div>
-                </div>
-                <div class="mix-composition" id="mixComposition">Drag or click colors below</div>
-            </div>
-
-            <div class="color-controls">
-                <div class="color-palette">
-                    <div class="color-item">
-                        <div class="color-dropper red" data-color="red" tabindex="0" role="button" aria-label="Add Red"></div>
-                        <div>Red (R)</div>
-                    </div>
-                    <div class="color-item">
-                        <div class="color-dropper green" data-color="green" tabindex="0" role="button" aria-label="Add Green"></div>
-                        <div>Green (G)</div>
-                    </div>
-                    <div class="color-item">
-                        <div class="color-dropper blue" data-color="blue" tabindex="0" role="button" aria-label="Add Blue"></div>
-                        <div>Blue (B)</div>
-                    </div>
-                </div>
-                <div class="controls">
-                    <button class="control-btn primary" id="checkBtn">Check (Enter)</button>
-                    <button class="control-btn secondary" id="resetBtn">Reset (Space)</button>
-                    <button class="control-btn tertiary" id="hintBtn">Hint (H)</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="info-column">
-            <div class="feedback-container">
-                <div class="feedback-header" id="feedbackHeader">Daily Challenge</div>
-                <div class="feedback" id="feedback">Mix colors to match the target!</div>
-            </div>
-
-            <div class="social-section">
-                <h3>📢 Share Your Magic</h3>
-                <div class="share-buttons">
-                    <button class="share-btn twitter" id="shareTwitter">🐦 Twitter</button>
-                    <button class="share-btn facebook" id="shareFacebook">📘 Facebook</button>
-                    <button class="share-btn copy" id="copyLink">📋 Copy Link</button>
-                </div>
-                <div class="share-stats">
-                    <div class="share-stat">
-                        <span>Today's Shares:</span>
-                        <span id="todayShares">1,892</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="leaderboard">
-                <h3>🏆 Today's Leaders</h3>
-                <div class="leaderboard-list">
-                    <div class="leaderboard-item">
-                        <span class="rank">1</span>
-                        <span class="player">You</span>
-                        <span class="score">-</span>
-                    </div>
-                    <div class="leaderboard-item">
-                        <span class="rank">2</span>
-                        <span class="player">ColorMaster</span>
-                        <span class="score">850</span>
-                    </div>
-                    <div class="leaderboard-item">
-                        <span class="rank">3</span>
-                        <span class="player">AlchemyPro</span>
-                        <span class="score">820</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="tab-container">
+        <button class="tab-btn active" id="daily-tab" aria-label="Daily mode">Daily</button>
+        <button class="tab-btn" id="levels-tab" aria-label="Levels mode">Levels</button>
     </div>
 
-    <div class="color-picker-section" id="colorPickerSection" style="display: none;">
-        <h3>🎨 Pick Your Color</h3>
-        <input type="color" id="customColorPicker" value="#ff0000">
-        <button class="control-btn primary" id="setTargetBtn">Set as Target</button>
-        <div class="random-options">
-            <button class="control-btn secondary random-btn" id="randomColorBtn">🎲 Random Color</button>
-            <button class="control-btn tertiary random-btn" id="challengeColorBtn">🤔 Challenge Me</button>
+    <div id="daily-content" class="tab-content active">
+        <div id="daily-status"></div>
+        <div class="guesses" id="daily-guesses"></div>
+        <div class="color-palette" id="daily-palette"></div>
+        <div id="daily-message"></div>
+        <div class="buttons">
+            <button id="daily-submit" disabled aria-label="Submit guess">Submit</button>
+            <button id="daily-clear" aria-label="Clear guess">Clear</button>
+            <button id="daily-share" class="share-btn" style="display:none;" aria-label="Share results">Share</button>
+            <button id="daily-new" aria-label="New game">New Game</button>
         </div>
+        <p id="daily-date"></p>
+        <div class="ad-placeholder">Ad Space (Google AdSense Banner)</div>
     </div>
 
-    <div class="ad-container">
-        <div class="ad-placeholder">
-            <div class="ad-label">Advertisement</div>
-            <div class="ad-content">
-                <div class="ad-mock">Your Ad Here</div>
-                <div class="ad-size">320×100</div>
-            </div>
+    <div id="levels-content" class="tab-content">
+        <div id="level-info" class="level-info"></div>
+        <div class="guesses" id="levels-guesses"></div>
+        <div class="color-palette" id="levels-palette"></div>
+        <div id="levels-message"></div>
+        <div class="buttons">
+            <button id="levels-submit" disabled aria-label="Submit guess">Submit</button>
+            <button id="levels-clear" aria-label="Clear guess">Clear</button>
+            <button id="levels-next" style="display:none;" aria-label="Next level">Next Level</button>
+            <button id="levels-new" aria-label="New game">New Game</button>
         </div>
+        <p id="level-display"></p>
     </div>
 </div>
 
-<div id="gameOverModal" class="modal">
-    <div class="modal-content">
-        <h2 id="modalTitle">🎉 Daily Challenge Complete!</h2>
-        <div class="score-breakdown">
-            <div class="score-item">
-                <span id="scoreLabel1">Color:</span>
-                <span id="scoreValue1">Golden Yellow</span>
-            </div>
-            <div class="score-item">
-                <span>Tries Used:</span>
-                <span id="finalTries">0</span>
-            </div>
-            <div class="score-item">
-                <span>Global Rank:</span>
-                <span id="finalRank">#---</span>
-            </div>
-            <div class="score-item total">
-                <span id="scoreLabelTotal">Daily Score:</span>
-                <span id="finalScore">0</span>
-            </div>
-        </div>
-        <div class="share-prompt">
-            <p id="shareMessage">🎊 Share your daily achievement with friends!</p>
-            <div class="modal-share-buttons">
-                <button class="share-btn twitter" id="modalShareTwitter">🐦 Share</button>
-                <button class="share-btn facebook" id="modalShareFacebook">📘 Share</button>
-            </div>
-        </div>
-        <button id="nextLevelBtn">Continue →</button>
-    </div>
-</div>
+<script>
+    // High contrast colors
+    const COLOR_MAP = { red: '#FF0000', lime: '#00FF00', blue: '#0000FF', yellow: '#FFFF00', magenta: '#FF00FF', cyan: '#00FFFF', orange: '#FFA500', purple: '#800080' };
+    const ALL_COLORS = Object.keys(COLOR_MAP);
+    const EMOJI_MAP = { red: '🟥', lime: '🟩', blue: '🟦', yellow: '🟨', magenta: '🟪', cyan: '🟦', orange: '🟧', purple: '🟣' }; // Adjusted cyan to blue emoji
+    const LEVELS = [{ pegs: 3, numColors: 4, maxGuesses: 8 }, { pegs: 4, numColors: 6, maxGuesses: 10 }, { pegs: 5, numColors: 8, maxGuesses: 12 }];
 
-<script src="script.js"></script>
+    // State (daily focus)
+    let currentTab = 'daily', dailySecret = [], levelsSecret = [], dailyCurrentGuess = [], levelsCurrentGuess = [], dailyGuesses = [], levelsGuesses = [], dailyMaxGuesses = 8, levelsMaxGuesses = 8, dailyAvailableColors = [], levelsAvailableColors = [], currentLevel = 0, solvedLevels = [], todayStr = '', hasPlayedToday = false, dailyPegs = 4, levelsPegs = 4, streak = 0;
+
+    // Load streak
+    function loadStreak() {
+        const savedStreak = localStorage.getItem('codeguess_streak') || '0';
+        streak = parseInt(savedStreak);
+        document.getElementById('streak').textContent = `Streak: ${streak}`;
+    }
+
+    // Update streak
+    function updateStreak(won) {
+        const lastDate = localStorage.getItem('codeguess_last_date') || '';
+        if (won && lastDate === todayStr) {
+            streak++;
+        } else if (won && lastDate !== todayStr) {
+            streak = 1;
+        } else if (!won) {
+            streak = 0;
+        }
+        localStorage.setItem('codeguess_streak', streak.toString());
+        localStorage.setItem('codeguess_last_date', todayStr);
+        loadStreak();
+    }
+
+    // Generate unique code
+    function generateCode(pegsNum, availColors, isDaily = false) {
+        const colors = [...availColors];
+        const rand = isDaily ? seededRandom(parseInt(todayStr.replace(/-/g, ''))) : ((i) => Math.random());
+        for (let i = colors.length - 1; i > 0; i--) {
+            const j = Math.floor(rand(i) * (i + 1));
+            [colors[i], colors[j]] = [colors[j], colors[i]];
+        }
+        return colors.slice(0, pegsNum);
+    }
+    function seededRandom(seed) {
+        return function(index) {
+            let x = Math.sin(seed + index) * 10000;
+            return x - Math.floor(x);
+        };
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+        const body = document.body;
+        const current = body.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        body.setAttribute('data-theme', next);
+        localStorage.setItem('codeguess_theme', next);
+    }
+    // Load theme
+    if (localStorage.getItem('codeguess_theme') === 'dark') toggleTheme();
+
+    // Tab switch
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tab + '-tab').classList.add('active');
+        document.getElementById(tab + '-content').classList.add('active');
+        if (tab === 'daily') {
+            checkPlayedToday();
+            initDailyPalette();
+            if (!hasPlayedToday) {
+                createCurrentGuessRow('daily');
+                updateGuessDisplay('daily');
+            }
+        } else {
+            loadLevel();
+            initLevelsPalette();
+            createCurrentGuessRow('levels');
+            updateGuessDisplay('levels');
+        }
+    }
+
+    // Daily
+    function generateDailyCode() {
+        const now = new Date();
+        todayStr = now.toISOString().split('T')[0];
+        dailyPegs = 4;
+        dailyAvailableColors = ALL_COLORS.slice(0, 6);
+        dailyMaxGuesses = 8;
+        dailySecret = generateCode(dailyPegs, dailyAvailableColors, true);
+        document.getElementById('daily-date').textContent = `Daily Puzzle: ${todayStr}`;
+    }
+    function checkPlayedToday() {
+        const saved = localStorage.getItem('codeguess_daily');
+        const savedData = saved ? JSON.parse(saved) : { date: null, guesses: [], won: false };
+        hasPlayedToday = savedData.date === todayStr;
+        dailyGuesses = hasPlayedToday ? savedData.guesses : [];
+        const statusDiv = document.getElementById('daily-status');
+        if (hasPlayedToday) {
+            statusDiv.innerHTML = '<div class="played-today">Played today! Previous:</div>';
+            dailyGuesses.forEach(g => displayGuess(g.guess, g.feedback, g.pegs || 4, 'daily'));
+            const won = savedData.won;
+            showMessage('daily', won ? 'Solved! 🎉 Try tomorrow.' : `Reached ${dailyGuesses.length}/${dailyMaxGuesses}. Tomorrow!`);
+            lockControls('daily');
+            // Ensure streak is updated on load if played today
+            updateStreak(won);
+        } else {
+            statusDiv.innerHTML = '';
+        }
+    }
+    function saveDailyPlay(won) {
+        localStorage.setItem('codeguess_daily', JSON.stringify({
+            date: todayStr,
+            guesses: dailyGuesses.map(g => ({...g, pegs: dailyPegs})),
+            won: won
+        }));
+    }
+
+    // Levels
+    function initLevels() {
+        solvedLevels = JSON.parse(localStorage.getItem('codeguess_levels') || '[]');
+        currentLevel = solvedLevels.length < LEVELS.length ? solvedLevels.length : 0;
+        loadLevel();
+    }
+    function loadLevel() {
+        const cfg = LEVELS[currentLevel];
+        levelsPegs = cfg.pegs;
+        levelsAvailableColors = ALL_COLORS.slice(0, cfg.numColors);
+        levelsMaxGuesses = cfg.maxGuesses;
+        levelsSecret = generateCode(levelsPegs, levelsAvailableColors);
+        levelsGuesses = [];
+        document.getElementById('level-info').innerHTML = `Level ${currentLevel + 1}/${LEVELS.length} (${levelsPegs} pegs, ${levelsAvailableColors.length} colors)`;
+        document.getElementById('level-display').textContent = `Max: ${levelsMaxGuesses} guesses`;
+        document.getElementById('levels-next').style.display = 'none';
+    }
+    function saveLevelsProgress() {
+        localStorage.setItem('codeguess_levels', JSON.stringify([...solvedLevels, currentLevel]));
+    }
+
+    // Palette & Select
+    function initPalette(tab, colors) {
+        const pal = document.getElementById(tab + '-palette');
+        pal.innerHTML = '';
+        colors.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'color-btn';
+            btn.style.backgroundColor = COLOR_MAP[c];
+            btn.title = c;
+            btn.setAttribute('aria-label', `Select ${c}`);
+            btn.onclick = () => selectColor(c, tab);
+            pal.appendChild(btn);
+        });
+    }
+    function initDailyPalette() { initPalette('daily', dailyAvailableColors); }
+    function initLevelsPalette() { initPalette('levels', levelsAvailableColors); }
+    function selectColor(color, tab) {
+        const guess = tab === 'daily' ? dailyCurrentGuess : levelsCurrentGuess;
+        const pegs = tab === 'daily' ? dailyPegs : levelsPegs;
+        const sub = document.getElementById(tab + '-submit');
+        if (guess.length < pegs && !(tab === 'daily' && hasPlayedToday) && !guess.includes(color)) {
+            guess.push(color);
+            updateGuessDisplay(tab);
+            if (guess.length === pegs) sub.disabled = false;
+        } else if (guess.includes(color)) {
+            showMessage(tab, 'No duplicates!');
+        }
+    }
+
+    // Guess handling
+    function clearGuess(tab) {
+        if (tab === 'daily') dailyCurrentGuess = [];
+        else levelsCurrentGuess = [];
+        document.getElementById(tab + '-submit').disabled = true;
+        updateGuessDisplay(tab);
+    }
+    function updateGuessDisplay(tab) {
+        const prefix = tab === 'daily' ? 'daily' : 'levels';
+        let row = document.querySelector(`#${prefix}-guesses .current-guess`);
+        if (!row) {
+            createCurrentGuessRow(tab);
+            row = document.querySelector(`#${prefix}-guesses .current-guess`);
+        }
+        const guess = tab === 'daily' ? dailyCurrentGuess : levelsCurrentGuess;
+        const pegs = tab === 'daily' ? dailyPegs : levelsPegs;
+        row.querySelectorAll('.square').forEach((sq, i) => {
+            if (i < guess.length) {
+                sq.style.backgroundColor = COLOR_MAP[guess[i]];
+                sq.classList.add('filled');
+            } else {
+                sq.style.backgroundColor = 'var(--bg-light)';
+                sq.classList.remove('filled');
+            }
+        });
+    }
+    function createCurrentGuessRow(tab) {
+        const prefix = tab === 'daily' ? 'daily' : 'levels';
+        const div = document.getElementById(prefix + '-guesses');
+        const pegs = tab === 'daily' ? dailyPegs : levelsPegs;
+        const row = document.createElement('div');
+        row.className = 'guess-row current-guess';
+        for (let i = 0; i < pegs; i++) {
+            const sq = document.createElement('div');
+            sq.className = 'square';
+            sq.setAttribute('aria-hidden', 'true');
+            row.appendChild(sq);
+        }
+        const fb = document.createElement('div');
+        fb.className = 'feedback';
+        row.appendChild(fb);
+        if (!(tab === 'daily' && hasPlayedToday)) div.appendChild(row);
+        return row;
+    }
+    function submitGuess(tab) {
+        const prefix = tab === 'daily' ? 'daily' : 'levels';
+        const guess = tab === 'daily' ? dailyCurrentGuess : levelsCurrentGuess;
+        const secret = tab === 'daily' ? dailySecret : levelsSecret;
+        const pegs = tab === 'daily' ? dailyPegs : levelsPegs;
+        const guesses = tab === 'daily' ? dailyGuesses : levelsGuesses;
+        const maxG = tab === 'daily' ? dailyMaxGuesses : levelsMaxGuesses;
+        if (guess.length !== pegs || (tab === 'daily' && hasPlayedToday)) return;
+        const fb = getFeedback(guess, secret);
+        displayGuess(guess, fb, pegs, prefix);
+        guesses.push({ guess: [...guess], feedback: fb, pegs });
+        const isWin = checkWin(guess, secret);
+        if (tab === 'daily' && !hasPlayedToday) {
+            saveDailyPlay(isWin);
+            updateStreak(isWin);
+        }
+        if (isWin) {
+            const cnt = guesses.length;
+            const msg = tab === 'daily' ? `Solved in ${cnt}! 🎉` : `Level done in ${cnt}! 🎉`;
+            showMessage(tab, msg);
+            if (tab === 'levels') {
+                solvedLevels.push(currentLevel);
+                saveLevelsProgress();
+                document.getElementById('levels-next').style.display = 'inline-block';
+            }
+            document.getElementById(tab + '-share').style.display = 'inline-block';
+            endGame(tab);
+        } else if (guesses.length >= maxG) {
+            showMessage(tab, `${tab === 'daily' ? 'Over!' : 'Failed!'} Code: ${secret.join(' ')}`);
+            if (tab === 'daily' && !hasPlayedToday) {
+                saveDailyPlay(false);
+                updateStreak(false);
+            }
+            endGame(tab);
+        } else {
+            if (tab === 'daily') dailyCurrentGuess = [];
+            else levelsCurrentGuess = [];
+            document.getElementById(prefix + '-submit').disabled = true;
+            updateGuessDisplay(tab);
+        }
+    }
+    function getFeedback(g, c) {
+        let b = 0, w = 0;
+        const cc = [...c], gc = [...g];
+        for (let i = 0; i < g.length; i++) {
+            if (g[i] === c[i]) {
+                b++;
+                cc[i] = null;
+                gc[i] = null;
+            }
+        }
+        for (let i = 0; i < g.length; i++) {
+            if (gc[i]) {
+                const idx = cc.indexOf(gc[i]);
+                if (idx > -1) {
+                    w++;
+                    cc[idx] = null;
+                }
+            }
+        }
+        return { black: b, white: w };
+    }
+    function displayGuess(guess, fb, numP, prefix) {
+        const div = document.getElementById(prefix + '-guesses');
+        const row = document.createElement('div');
+        row.className = 'guess-row';
+        guess.forEach(col => {
+            const sq = document.createElement('div');
+            sq.className = 'square filled';
+            sq.style.backgroundColor = COLOR_MAP[col];
+            row.appendChild(sq);
+        });
+        const fbd = document.createElement('div');
+        fbd.className = 'feedback';
+        for (let i = 0; i < fb.black; i++) {
+            const p = document.createElement('div');
+            p.className = 'black-pin pop';
+            setTimeout(() => p.classList.remove('pop'), 200);
+            fbd.appendChild(p);
+        }
+        for (let i = 0; i < fb.white; i++) {
+            const p = document.createElement('div');
+            p.className = 'white-pin pop';
+            setTimeout(() => p.classList.remove('pop'), 200);
+            fbd.appendChild(p);
+        }
+        row.appendChild(fbd);
+        const cur = document.querySelector(`#${prefix}-guesses .current-guess`);
+        if (cur) div.insertBefore(row, cur);
+        else div.appendChild(row);
+        if (cur) cur.remove();
+    }
+    function checkWin(g, s) {
+        return g.every((col, i) => col === s[i]);
+    }
+    function showMessage(tab, text) {
+        document.getElementById(tab + '-message').textContent = text;
+    }
+    function endGame(tab) {
+        const pre = tab === 'daily' ? 'daily' : 'levels';
+        document.getElementById(pre + '-submit').disabled = true;
+        document.getElementById(pre + '-clear').disabled = true;
+    }
+    function lockControls(tab) {
+        const pre = tab === 'daily' ? 'daily' : 'levels';
+        document.getElementById(pre + '-submit').style.display = 'none';
+        document.getElementById(pre + '-clear').style.display = 'none';
+    }
+    function nextLevel() {
+        currentLevel = (currentLevel + 1) % LEVELS.length;
+        switchTab('levels');
+    }
+    function newGame(tab) {
+        if (tab === 'daily') {
+            dailyGuesses = [];
+            dailyCurrentGuess = [];
+            document.getElementById('daily-guesses').innerHTML = '';
+            document.getElementById('daily-message').textContent = '';
+            document.getElementById('daily-submit').disabled = true;
+            document.getElementById('daily-clear').disabled = false;
+            document.getElementById('daily-share').style.display = 'none';
+            document.getElementById('daily-submit').style.display = 'inline-block';
+            document.getElementById('daily-clear').style.display = 'inline-block';
+            generateDailyCode();
+            checkPlayedToday();
+            if (!hasPlayedToday) {
+                createCurrentGuessRow('daily');
+                updateGuessDisplay('daily');
+            }
+            initDailyPalette();
+        } else {
+            levelsGuesses = [];
+            levelsCurrentGuess = [];
+            document.getElementById('levels-guesses').innerHTML = '';
+            document.getElementById('levels-message').textContent = '';
+            document.getElementById('levels-submit').disabled = true;
+            document.getElementById('levels-clear').disabled = false;
+            document.getElementById('levels-next').style.display = 'none';
+            document.getElementById('levels-submit').style.display = 'inline-block';
+            document.getElementById('levels-clear').style.display = 'inline-block';
+            initLevels();
+            createCurrentGuessRow('levels');
+            updateGuessDisplay('levels');
+            initLevelsPalette();
+        }
+    }
+
+    // Share (virality magic)
+    function shareResults(tab) {
+        const guesses = tab === 'daily' ? dailyGuesses : levelsGuesses;
+        const secret = tab === 'daily' ? dailySecret : levelsSecret;
+        const won = guesses.some(g => checkWin(g.guess, secret));
+        let shareText = `CodeGuess ${tab === 'daily' ? 'Daily' : `Level ${currentLevel + 1}` } ${won ? `in ${guesses.length}!` : `😅`}\n`;
+        guesses.forEach(g => {
+            shareText += g.guess.map(c => EMOJI_MAP[c] || '⬜').join('') + (g.feedback.black ? '●'.repeat(g.feedback.black) : '') + (g.feedback.white ? '○'.repeat(g.feedback.white) : '') + '\n';
+        });
+        shareText += `Play at yourdomain.com/codeguess.html #CodeGuess`;
+        if (navigator.share) {
+            navigator.share({ title: 'CodeGuess', text: shareText });
+        } else {
+            navigator.clipboard.writeText(shareText).then(() => alert('Copied to clipboard! Share the fun!'));
+        }
+    }
+
+    // Events
+    document.getElementById('daily-tab').onclick = () => switchTab('daily');
+    document.getElementById('levels-tab').onclick = () => switchTab('levels');
+    document.getElementById('daily-submit').onclick = () => submitGuess('daily');
+    document.getElementById('daily-clear').onclick = () => clearGuess('daily');
+    document.getElementById('daily-share').onclick = () => shareResults('daily');
+    document.getElementById('daily-new').onclick = () => newGame('daily');
+    document.getElementById('levels-submit').onclick = () => submitGuess('levels');
+    document.getElementById('levels-clear').onclick = () => clearGuess('levels');
+    document.getElementById('levels-next').onclick = nextLevel;
+    document.getElementById('levels-new').onclick = () => newGame('levels');
+
+    // Init
+    loadStreak();
+    generateDailyCode();
+    switchTab('daily');
+</script>
 </body>
 </html>
