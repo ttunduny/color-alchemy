@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Alchemy - Mix Magic with Colors!</title>
-    <meta name="description" content="Mix primary colors to create magical hues in this addictive color mixing game. Perfect your alchemy skills across 20 challenging levels!">
+    <title>Color Alchemy 🎨🔮</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,105 +12,92 @@
         <h1>🔮 Color Alchemy</h1>
         <div class="game-stats">
             <div class="stat">
-                <span class="stat-label">Level</span>
-                <span id="level" class="stat-value">1</span>
+                <div class="stat-label">Level</div>
+                <div class="stat-value" id="level">1</div>
             </div>
             <div class="stat">
-                <span class="stat-label">Tries</span>
-                <span id="tries" class="stat-value">0</span>
+                <div class="stat-label">Tries</div>
+                <div class="stat-value" id="tries">0</div>
             </div>
             <div class="stat">
-                <span class="stat-label">Rank</span>
-                <span id="rank" class="stat-value">-</span>
+                <div class="stat-label">Rank</div>
+                <div class="stat-value" id="rank">-</div>
             </div>
         </div>
     </header>
 
-    <!-- Game Mode Selector -->
     <div class="mode-selector">
         <button class="mode-btn active" data-mode="daily">🔥 Daily Challenge</button>
         <button class="mode-btn" data-mode="levels">🎮 Level Mode</button>
         <button class="mode-btn" data-mode="picker">🎨 Color Picker</button>
     </div>
 
-    <!-- Daily Challenge Banner -->
-    <div class="daily-challenge" id="dailyChallenge">
+    <div id="dailyChallenge" class="daily-challenge">
         <div class="daily-header">
-            <span class="daily-badge">🔥 DAILY CHALLENGE</span>
-            <span class="daily-timer" id="dailyTimer">24:00:00</span>
+            <div class="daily-badge">🔥 DAILY CHALLENGE</div>
+            <div class="daily-timer" id="dailyTimer">24:00:00</div>
         </div>
         <div class="daily-stats">
-            <span>Today's Color: <strong id="dailyColorName">Mystic Purple</strong></span>
-            <span>Players: <strong id="dailyPlayers">0</strong></span>
+            <div>Today's Color: <span id="dailyColorName">Mystic Purple</span></div>
+            <div>Players: <span id="dailyPlayers">0</span></div>
         </div>
     </div>
 
     <div class="game-area">
-        <!-- Left Column: Target Color -->
         <div class="target-column">
             <div class="target-section">
                 <h2 id="targetTitle">🎯 Daily Challenge</h2>
                 <div class="target-color" id="targetColor"></div>
                 <div class="color-name" id="colorName">Golden Yellow</div>
                 <div class="color-hint" id="colorHint">Mix Red + Green</div>
-
-                <!-- Color Picker (Hidden by default) -->
-                <div class="color-picker-section" id="colorPickerSection" style="display: none;">
-                    <h3>🎨 Pick Your Color</h3>
-                    <input type="color" id="customColorPicker" value="#ff0000">
-                    <button id="setCustomColor" class="control-btn primary">Set as Target</button>
-                    <div class="random-options">
-                        <button id="randomColor" class="control-btn secondary">🎲 Random Color</button>
-                        <button id="challengeColor" class="control-btn tertiary">🤔 Challenge Me</button>
-                    </div>
+            </div>
+            <div class="global-stats">
+                <h3>🌍 Global Stats</h3>
+                <div class="stat-item">
+                    <span>Today's Players:</span>
+                    <span id="globalPlayers">1,234</span>
                 </div>
-
-                <div class="global-stats">
-                    <h3>🌍 Global Stats</h3>
-                    <div class="stat-item">
-                        <span>Today's Players:</span>
-                        <span id="globalPlayers">1,234</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>Your Rank:</span>
-                        <span id="globalRank">#456</span>
-                    </div>
+                <div class="stat-item">
+                    <span>Your Rank:</span>
+                    <span id="globalRank">#456</span>
                 </div>
             </div>
         </div>
 
-        <!-- Middle Column: Mixing Area & Controls -->
         <div class="mixing-column">
             <div class="mixing-area" id="mixingArea">
-                <div class="current-mix" id="currentMix"></div>
+                <div class="cauldron" id="cauldron">
+                    <div class="cauldron-handle"></div>
+                    <div class="cauldron-body" id="cauldronBody">
+                        <div class="current-mix" id="currentMix"></div>
+                    </div>
+                </div>
                 <div class="mix-composition" id="mixComposition">Drag or click colors below</div>
             </div>
 
             <div class="color-controls">
                 <div class="color-palette">
                     <div class="color-item">
-                        <div class="color-dropper red" data-color="red" draggable="true"></div>
-                        <button class="mix-btn" data-color="red">Red (R)</button>
+                        <div class="color-dropper red" data-color="red" tabindex="0" role="button" aria-label="Add Red"></div>
+                        <div>Red (R)</div>
                     </div>
                     <div class="color-item">
-                        <div class="color-dropper green" data-color="green" draggable="true"></div>
-                        <button class="mix-btn" data-color="green">Green (G)</button>
+                        <div class="color-dropper green" data-color="green" tabindex="0" role="button" aria-label="Add Green"></div>
+                        <div>Green (G)</div>
                     </div>
                     <div class="color-item">
-                        <div class="color-dropper blue" data-color="blue" draggable="true"></div>
-                        <button class="mix-btn" data-color="blue">Blue (B)</button>
+                        <div class="color-dropper blue" data-color="blue" tabindex="0" role="button" aria-label="Add Blue"></div>
+                        <div>Blue (B)</div>
                     </div>
                 </div>
-            </div>
-
-            <div class="controls">
-                <button id="checkBtn" class="control-btn primary">Check (Enter)</button>
-                <button id="resetBtn" class="control-btn secondary">Reset (Space)</button>
-                <button id="hintBtn" class="control-btn tertiary">Hint (H)</button>
+                <div class="controls">
+                    <button class="control-btn primary" id="checkBtn">Check (Enter)</button>
+                    <button class="control-btn secondary" id="resetBtn">Reset (Space)</button>
+                    <button class="control-btn tertiary" id="hintBtn">Hint (H)</button>
+                </div>
             </div>
         </div>
 
-        <!-- Right Column: Feedback & Info -->
         <div class="info-column">
             <div class="feedback-container">
                 <div class="feedback-header" id="feedbackHeader">Daily Challenge</div>
@@ -123,7 +109,7 @@
                 <div class="share-buttons">
                     <button class="share-btn twitter" id="shareTwitter">🐦 Twitter</button>
                     <button class="share-btn facebook" id="shareFacebook">📘 Facebook</button>
-                    <button class="share-btn copy" id="shareCopy">📋 Copy Link</button>
+                    <button class="share-btn copy" id="copyLink">📋 Copy Link</button>
                 </div>
                 <div class="share-stats">
                     <div class="share-stat">
@@ -135,7 +121,7 @@
 
             <div class="leaderboard">
                 <h3>🏆 Today's Leaders</h3>
-                <div class="leaderboard-list" id="leaderboardList">
+                <div class="leaderboard-list">
                     <div class="leaderboard-item">
                         <span class="rank">1</span>
                         <span class="player">You</span>
@@ -156,9 +142,18 @@
         </div>
     </div>
 
-    <!-- Ad Space Container -->
+    <div class="color-picker-section" id="colorPickerSection" style="display: none;">
+        <h3>🎨 Pick Your Color</h3>
+        <input type="color" id="customColorPicker" value="#ff0000">
+        <button class="control-btn primary" id="setTargetBtn">Set as Target</button>
+        <div class="random-options">
+            <button class="control-btn secondary random-btn" id="randomColorBtn">🎲 Random Color</button>
+            <button class="control-btn tertiary random-btn" id="challengeColorBtn">🤔 Challenge Me</button>
+        </div>
+    </div>
+
     <div class="ad-container">
-        <div class="ad-placeholder" id="adPlaceholder">
+        <div class="ad-placeholder">
             <div class="ad-label">Advertisement</div>
             <div class="ad-content">
                 <div class="ad-mock">Your Ad Here</div>
@@ -166,40 +161,37 @@
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Game Over Modal -->
-    <div id="gameOverModal" class="modal">
-        <div class="modal-content">
-            <h2 id="modalTitle">🎉 Daily Challenge Complete!</h2>
-            <div class="score-breakdown">
-                <div class="score-item">
-                    <span id="scoreLabel1">Color:</span>
-                    <span id="scoreValue1">Golden Yellow</span>
-                </div>
-                <div class="score-item">
-                    <span>Tries Used:</span>
-                    <span id="finalTries">0</span>
-                </div>
-                <div class="score-item">
-                    <span>Global Rank:</span>
-                    <span id="finalRank">#---</span>
-                </div>
-                <div class="score-item total">
-                    <span id="scoreLabelTotal">Daily Score:</span>
-                    <span id="finalScore">0</span>
-                </div>
+<div id="gameOverModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">🎉 Daily Challenge Complete!</h2>
+        <div class="score-breakdown">
+            <div class="score-item">
+                <span id="scoreLabel1">Color:</span>
+                <span id="scoreValue1">Golden Yellow</span>
             </div>
-
-            <div class="share-prompt">
-                <p id="shareMessage">🎊 Share your daily achievement with friends!</p>
-                <div class="modal-share-buttons">
-                    <button class="share-btn twitter" id="modalShareTwitter">🐦 Share</button>
-                    <button class="share-btn facebook" id="modalShareFacebook">📘 Share</button>
-                </div>
+            <div class="score-item">
+                <span>Tries Used:</span>
+                <span id="finalTries">0</span>
             </div>
-
-            <button id="nextLevelBtn">Continue →</button>
+            <div class="score-item">
+                <span>Global Rank:</span>
+                <span id="finalRank">#---</span>
+            </div>
+            <div class="score-item total">
+                <span id="scoreLabelTotal">Daily Score:</span>
+                <span id="finalScore">0</span>
+            </div>
         </div>
+        <div class="share-prompt">
+            <p id="shareMessage">🎊 Share your daily achievement with friends!</p>
+            <div class="modal-share-buttons">
+                <button class="share-btn twitter" id="modalShareTwitter">🐦 Share</button>
+                <button class="share-btn facebook" id="modalShareFacebook">📘 Share</button>
+            </div>
+        </div>
+        <button id="nextLevelBtn">Continue →</button>
     </div>
 </div>
 

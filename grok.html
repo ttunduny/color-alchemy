@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Mixing Cauldron</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 600px;
+        }
+        canvas {
+            border: 1px solid #000;
+            background-color: #fff;
+        }
+        #controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #syringes {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+        .syringe {
+            width: 40px;
+            height: 150px;
+            border: 2px solid #000;
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            cursor: pointer;
+            background: linear-gradient(to bottom, transparent 10%, currentColor 10%, currentColor 90%, transparent 90%);
+            overflow: hidden;
+        }
+        .syringe::before {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 18px;
+            width: 4px;
+            height: 20px;
+            background: #ccc;
+            border: 1px solid #000;
+            border-top: none;
+        }
+        .syringe::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -2px;
+            width: 44px;
+            height: 15px;
+            background: #888;
+            border: 2px solid #000;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+        }
+        #red { color: red; }
+        #yellow { color: yellow; }
+        #blue { color: blue; }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #target-color {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #000;
+            margin-bottom: 20px;
+        }
+        #message {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        #score {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>Color Mixing Cauldron</h1>
+<div id="target-color"></div>
+<div id="game-container">
+    <canvas id="cauldron" width="400" height="400"></canvas>
+</div>
+<div id="controls">
+    <div id="syringes">
+        <div id="red" class="syringe" onclick="selectSyringe('red')"></div>
+        <div id="yellow" class="syringe" onclick="selectSyringe('yellow')"></div>
+        <div id="blue" class="syringe" onclick="selectSyringe('blue')"></div>
+    </div>
+    <button id="pour" onclick="pourColor()" disabled>Pour Drop</button>
+    <button id="mix" onclick="mixColors()">Mix</button>
+    <button onclick="resetGame()">Reset</button>
+</div>
+<div id="message"></div>
+<div id="score">Score: 0</div>
+
+<script>
+    const canvas = document.getElementById('cauldron');
+    const ctx = canvas.getContext('2d');
+    const targetColorDiv = document.getElementById('target-color');
+    const messageDiv = document.getElementById('message');
+    const scoreDiv = document.getElementById('score');
+    const pourButton = document.getElementById('pour');
+
+    let selectedSyringe = null;
+    let cauldronColor = { r: 255, g: 255, b: 255 }; // Start with white (empty)
+    let components = { r: 0, g: 0, b: 0 };
+    let totalDrops = 0;
+    let targetColor = generateTargetColor();
+    let score = 0;
+    let particles = [];
+    let bubbles = [];
+
+    function generateTargetColor() {
+        const r = Math.floor(Math.random() * 256);
+        const g = Math.floor(Math.random() * 256);
+        const b = Math.floor(Math.random() * 256);
+        targetColorDiv.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+        return { r, g, b };
+    }
+
+    function drawCauldron() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw cauldron body
+        ctx.beginPath();
+        ctx.moveTo(50, 350);
+        ctx.quadraticCurveTo(200, 400, 350, 350);
+        ctx.lineTo(350, 100);
+        ctx.quadraticCurveTo(200, 50, 50, 100);
+        ctx.closePath();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
+        // Fill with current color only if mixed (but actually controlled by when we update cauldronColor)
+        ctx.fillStyle = `rgb(${cauldronColor.r}, ${cauldronColor.g}, ${cauldronColor.b})`;
+        ctx.fill();
+
+        // Draw open top
+        ctx.beginPath();
+        ctx.ellipse(200, 100, 150, 20, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Draw selected syringe at top if selected
+        if (selectedSyringe) {
+            // Barrel
+            ctx.fillStyle = selectedSyringe;
+            ctx.fillRect(185, 30, 30, 60);
+            // Plunger
+            ctx.fillStyle = '#888';
+            ctx.fillRect(183, 15, 34, 15);
+            // Needle
+            ctx.fillStyle = '#ccc';
+            ctx.fillRect(198, 90, 4, 20);
+        }
+
+        // Draw particles (drops and splashes)
+        particles.forEach(p => {
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            p.y += p.vy;
+            p.x += p.vx;
+            p.vy += 0.1; // Gravity for falling drops
+            p.size -= 0.05;
+        });
+        particles = particles.filter(p => p.size > 0 && p.y < 400);
+
+        // Draw bubbles (for mixing)
+        bubbles.forEach(b => {
+            ctx.fillStyle = `rgba(255, 255, 255, ${b.alpha})`;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+            ctx.fill();
+            b.y -= b.vy;
+            b.alpha -= 0.005;
+        });
+        bubbles = bubbles.filter(b => b.alpha > 0);
+
+        requestAnimationFrame(drawCauldron);
+    }
+
+    function selectSyringe(color) {
+        selectedSyringe = color;
+        pourButton.disabled = false;
+        messageDiv.textContent = `Selected: ${color.charAt(0).toUpperCase() + color.slice(1)}`;
+        drawCauldron(); // Redraw to show syringe
+    }
+
+    function pourColor() {
+        if (!selectedSyringe) return;
+
+        let addR = 0, addG = 0, addB = 0;
+        if (selectedSyringe === 'red') addR = 50;
+        else if (selectedSyringe === 'yellow') { addR = 50; addG = 50; }
+        else if (selectedSyringe === 'blue') addB = 50;
+
+        components.r += addR;
+        components.g += addG;
+        components.b += addB;
+        totalDrops++;
+
+        // Create falling drop particle
+        particles.push({
+            x: 200,
+            y: 110, // Start just below needle
+            vx: 0,
+            vy: 2,
+            size: 5,
+            color: selectedSyringe
+        });
+
+        // Create splash particles when drop hits "bottom"
+        setTimeout(() => {
+            for (let i = 0; i < 10; i++) {
+                particles.push({
+                    x: 200 + (Math.random() - 0.5) * 20,
+                    y: 300 + Math.random() * 50,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5 - 5, // Upward splash
+                    size: Math.random() * 3 + 1,
+                    color: selectedSyringe
+                });
+            }
+        }, 500); // Delay to simulate fall time
+
+        // Play sound (simulated)
+        console.log('Drip sound!');
+    }
+
+    function mixColors() {
+        if (totalDrops === 0) return;
+
+        updateCauldronColor();
+
+        // Create bubble effects
+        for (let i = 0; i < 20; i++) {
+            bubbles.push({
+                x: 100 + Math.random() * 200,
+                y: 300 + Math.random() * 50,
+                vy: Math.random() * 2 + 1,
+                size: Math.random() * 10 + 5,
+                alpha: 1
+            });
+        }
+
+        // Check match
+        const diff = colorDifference(cauldronColor, targetColor);
+        if (diff < 20) {
+            messageDiv.textContent = 'Perfect Match! 🎉';
+            score += 100 - Math.floor(diff);
+            nextLevel();
+        } else if (diff < 50) {
+            messageDiv.textContent = 'Close! Try again.';
+            score += 50 - Math.floor(diff / 2);
+        } else {
+            messageDiv.textContent = 'Not quite. Keep mixing!';
+        }
+        scoreDiv.textContent = `Score: ${score}`;
+
+        // Swirl animation (simulated by redrawing)
+        console.log('Mixing swirl sound!');
+    }
+
+    function updateCauldronColor() {
+        if (totalDrops > 0) {
+            cauldronColor.r = Math.min(255, Math.floor(components.r / totalDrops * 5));
+            cauldronColor.g = Math.min(255, Math.floor(components.g / totalDrops * 5));
+            cauldronColor.b = Math.min(255, Math.floor(components.b / totalDrops * 5));
+        }
+    }
+
+    function colorDifference(c1, c2) {
+        return Math.sqrt(
+            Math.pow(c1.r - c2.r, 2) +
+            Math.pow(c1.g - c2.g, 2) +
+            Math.pow(c1.b - c2.b, 2)
+        );
+    }
+
+    function nextLevel() {
+        targetColor = generateTargetColor();
+        resetCauldron();
+        // Glow effect (simulated)
+        canvas.style.boxShadow = '0 0 20px gold';
+        setTimeout(() => { canvas.style.boxShadow = 'none'; }, 1000);
+    }
+
+    function resetCauldron() {
+        components = { r: 0, g: 0, b: 0 };
+        totalDrops = 0;
+        cauldronColor = { r: 255, g: 255, b: 255 };
+    }
+
+    function resetGame() {
+        resetCauldron();
+        selectedSyringe = null;
+        pourButton.disabled = true;
+        messageDiv.textContent = '';
+        targetColor = generateTargetColor();
+        score = 0;
+        scoreDiv.textContent = `Score: ${score}`;
+    }
+
+    drawCauldron();
+</script>
+</body>
+</html>
